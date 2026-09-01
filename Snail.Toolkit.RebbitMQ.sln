@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Snail.Toolkit.RabbitMQ", "src\Snail.Toolkit.RabbitMQ.csproj", "{D7CACEF9-8DE9-42B3-95FC-03CBE9EA49C9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Snail.Toolkit.RabbitMQ.Tests", "tests\Snail.Toolkit.RabbitMQ.Tests.csproj", "{1A2032AF-59D6-44CB-9209-EE06013C917F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D7CACEF9-8DE9-42B3-95FC-03CBE9EA49C9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D7CACEF9-8DE9-42B3-95FC-03CBE9EA49C9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D7CACEF9-8DE9-42B3-95FC-03CBE9EA49C9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D7CACEF9-8DE9-42B3-95FC-03CBE9EA49C9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1A2032AF-59D6-44CB-9209-EE06013C917F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1A2032AF-59D6-44CB-9209-EE06013C917F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1A2032AF-59D6-44CB-9209-EE06013C917F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1A2032AF-59D6-44CB-9209-EE06013C917F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
