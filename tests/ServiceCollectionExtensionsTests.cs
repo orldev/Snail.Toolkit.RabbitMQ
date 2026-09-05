@@ -1,5 +1,7 @@
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using RabbitMQ.Client;
 using Snail.Toolkit.RabbitMQ.Extensions;
 
 namespace Snail.Toolkit.RabbitMQ.Tests;
@@ -27,5 +29,63 @@ public class ServiceCollectionExtensionsTests
         Assert.Equal("test.test", options.ConnectionFactory.HostName);
         Assert.Equal("test", options.ConnectionFactory.UserName);
         Assert.Equal("password", options.ConnectionFactory.Password);
+    }
+
+    [Fact]
+    public void AddRabbitFromConfiguration_BindsTheWholeEndpoint()
+    {
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["RabbitMQ:HostName"] = "broker.internal",
+                ["RabbitMQ:Port"] = "5671",
+                ["RabbitMQ:VirtualHost"] = "orders",
+                ["RabbitMQ:UserName"] = "app",
+                ["RabbitMQ:Password"] = "secret",
+                ["RabbitMQ:ClientProvidedName"] = "orders-service",
+                ["RabbitMQ:Ssl:Enabled"] = "true"
+            })
+            .Build();
+
+        var services = new ServiceCollection();
+
+        services.AddRabbit(configuration, _ => { });
+
+        var provider = services.BuildServiceProvider();
+
+        var factory = provider.GetRequiredService<IOptions<RabbitOptions>>().Value.ConnectionFactory;
+
+        Assert.Equal("broker.internal", factory.HostName);
+        Assert.Equal(5671, factory.Port);
+        Assert.Equal("orders", factory.VirtualHost);
+        Assert.Equal("app", factory.UserName);
+        Assert.Equal("secret", factory.Password);
+        Assert.Equal("orders-service", factory.ClientProvidedName);
+        Assert.True(factory.Ssl.Enabled);
+        // An unset ServerName must not stay empty: certificate validation would fail on it.
+        Assert.Equal("broker.internal", factory.Ssl.ServerName);
+    }
+
+    [Fact]
+    public void AddRabbitFromConfiguration_WithoutSettings_KeepsClientDefaults()
+    {
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["RabbitMQ:HostName"] = "broker.internal"
+            })
+            .Build();
+
+        var services = new ServiceCollection();
+
+        services.AddRabbit(configuration, _ => { });
+
+        var provider = services.BuildServiceProvider();
+
+        var factory = provider.GetRequiredService<IOptions<RabbitOptions>>().Value.ConnectionFactory;
+
+        Assert.Equal(AmqpTcpEndpoint.UseDefaultPort, factory.Port);
+        Assert.Equal("/", factory.VirtualHost);
+        Assert.False(factory.Ssl.Enabled);
     }
 }

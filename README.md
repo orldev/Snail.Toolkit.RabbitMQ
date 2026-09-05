@@ -18,9 +18,17 @@ Extension for the framework `RabbitMQ.Client`
 - **Reliability by default**
     - Publisher confirmations: `PublishAsync` completes only after the broker confirms the message
       and throws when it is rejected or unroutable (`Mandatory`)
-    - Poison messages (payload that cannot be deserialized) are rejected without requeue and logged —
-      a single broken message never stalls a consumer
-    - Retry with backoff via a companion retry queue: `WithRetry` on a queue
+    - Poison messages (payload that cannot be deserialized) never stall a consumer and never
+      cycle through the retry queue — they are parked, dropped or rejected depending on the queue setup
+    - Retry with backoff via a companion retry queue: `WithRetry` on a queue, with optional
+      parking of exhausted messages (`parkTo`) for manual inspection
+    - A dead producer channel is evicted and replaced automatically — one broker-side channel
+      error never disables publishing until restart
+    - Contradictory consumer configuration (`AutoAck` + `WithRetry`/`Requeue`) fails the
+      application start with a clear message instead of silently not retrying
+    - Graceful shutdown: consumers are cancelled and channels and connections closed when the host stops
+    - Traces out of the box: publish and delivery share one trace, and the delivery span records
+      how the message was settled (see [Tracing](#tracing))
 
 ## Installation
 
@@ -28,7 +36,7 @@ Extension for the framework `RabbitMQ.Client`
 dotnet add package Snail.Toolkit.RabbitMQ
 ```
 
-## Usage ([examples](https://github.com/phema-team/Phema.RabbitMQ/tree/master/examples))
+## Usage
 
 ```csharp
 services.AddRabbit(options =>
@@ -56,8 +64,9 @@ services.AddRabbit(options =>
             // .RejectPublish()
             // .Quorum()
             // .SingleActiveConsumer()
-            // Failed messages are parked in "queue.retry" for 30s, then redelivered; dropped after 5 attempts
-            // .WithRetry(TimeSpan.FromSeconds(30), maxAttempts: 5)
+            // Failed messages wait in "queue.retry" for 30s, then are redelivered;
+            // after 5 attempts the message moves to "queue.failed" (or is dropped without parkTo)
+            // .WithRetry(TimeSpan.FromSeconds(30), maxAttempts: 5, parkTo: "queue.failed")
             .AutoDelete()
             .Durable()
             // Type checks
@@ -66,7 +75,7 @@ services.AddRabbit(options =>
         // Type checks
         connection.AddConsumer(queue)
             // .Tagged("tag")
-            // .Prefetch(1)
+            // .Prefetch(1)  // defaults to 10; 0 means unlimited
             // .Count(1)
             // .Exclusive()
             // .NoLocal()
@@ -76,9 +85,8 @@ services.AddRabbit(options =>
             .Count(2)
             .Requeue()
             .Subscribe<Payload, Consumer>();
-            .Subscribe(...);
 
-        // Type cheks
+        // Type checks
         connection.AddProducer<Payload>(exchange)
             // .Transactional()
             // .Mandatory()
@@ -115,20 +123,34 @@ await producer.PublishAsync(payload, b => b
 {
   "RabbitMQ": {
     "HostName": "localhost",
+    "Port": 5672,
+    "VirtualHost": "/",
     "UserName": "guest",
-    "Password": "guest"
-    "ClientProvidedName": "default"
+    "Password": "guest",
+    "ClientProvidedName": "default",
+    "Ssl": {
+      "Enabled": false,
+      "ServerName": null,
+      "CertPath": null,
+      "CertPassphrase": null
+    }
   }
 }
 ```
+
+Every key is optional. `Port` left out means the client default — 5672 plain, 5671 once
+`Ssl:Enabled` is set — and `Ssl:ServerName` left out falls back to `HostName`, which is what
+certificate validation compares against. `CertPath` is only needed for mutual TLS.
 
 ## Supported
 
 - Durable, internal, dead letter, bound and alternate exchanges
 - Lazy, durable, quorum and exclusive queues
 - Publisher confirmations (on by default for non-transactional producers) and transactional channel mode
-- Poison message handling: undeserializable payloads are rejected without requeue and logged
-- Retry with backoff through a companion retry queue (`WithRetry`)
+- Poison message handling: undeserializable payloads are parked, dropped or rejected — never retried, never stalling
+- Retry with backoff through a companion retry queue (`WithRetry`), with optional parking (`parkTo`)
+- Automatic eviction and replacement of broker-closed producer channels
+- Consumer configuration validation at startup and graceful consumer shutdown
 - Message id and correlation id declaration
 - Persistent producers
 - Consumers priority
@@ -150,9 +172,11 @@ await producer.PublishAsync(payload, b => b
 - Set queue max message count with `MaxMessageCount` extension
 - Set queue max message size in bytes with `MaxMessageSize` extension
 - Set dead letter exchange with `DeadLetterTo` extension
-- Enable retry with backoff with `WithRetry` extension: failed messages are parked in a companion
-  `{queue}.retry` queue for the given delay and redelivered; after `maxAttempts` the message is
-  acknowledged, logged and dropped. Cannot be combined with `DeadLetterTo`
+- Enable retry with backoff with `WithRetry` extension: failed messages wait in a companion
+  `{queue}.retry` queue for the given delay and are redelivered; after `maxAttempts` the message
+  moves to the `parkTo` queue for manual inspection, or is acknowledged, logged and dropped when
+  no parking queue is configured. Cannot be combined with `DeadLetterTo`. Companion queues mirror
+  the main queue's durability
 - Set queue ttl with `TimeToLive` extension
 - Set message ttl with `MessageTimeToLive` extension
 - Set queue max priority with `MaxPriority` extension
@@ -174,17 +198,23 @@ await producer.PublishAsync(payload, b => b
 ## Consumers
 
 - Tag consumers using `Tagged` extension
-- Limit prefetch count with `Prefetch` extension
+- Limit prefetch count with `Prefetch` extension (defaults to 10; pass 0 for an unlimited prefetch)
 - Scale consumers by using `Count` extension
 - Declare exclusive consume with `Exclusive` extension
 - Forbid to consume own producers with `NoLocal` extension
 - When no need to ack explicitly use `AutoAck` extension
-- Requeue messages on fail with `Requeue` extension (single immediate requeue; prefer `WithRetry` on the queue)
+- Requeue messages on fail with `Requeue` extension (single immediate requeue; prefer `WithRetry` on the queue).
+  Messages are always settled one by one — batch ack/nack is not offered, because the consumers of one
+  declaration share a channel and would settle each other's in-flight deliveries
 - Set consumer priority with `Priority` extension
 - Add custom arguments with `Argument` extension
-- All consumers start in `IHostedService`
-- A message whose payload cannot be deserialized is rejected without requeue and logged
-  (dead-lettered when the queue has a dead letter exchange); the consumer keeps running
+- All consumers start in `IHostedService` and are cancelled cleanly when the host stops
+- A message whose payload cannot be deserialized never stalls the consumer and never enters
+  the retry cycle (the failure is deterministic): it is parked when the queue has a `parkTo`
+  queue, acknowledged and dropped when the queue retries without one, and rejected without
+  requeue otherwise (dead-lettered when the queue has a dead letter exchange)
+- `AutoAck` combined with `Requeue` or a `WithRetry` queue fails the application start:
+  an auto-acknowledged message can never be requeued or retried
 
 ## Producers
 
@@ -195,12 +225,35 @@ await producer.PublishAsync(payload, b => b
 - Set message ttl with `MessageTimeToLive` extension
 - Set message id with `MessageId` extension (per message via `PublishAsync` overrides)
 - Set correlation id with `CorrelationId` extension (per message via `PublishAsync` overrides)
-- Use channel transactional mode with `Transactional` extension
+- Use channel transactional mode with `Transactional` extension; transactional publishes are
+  serialized per channel, because an AMQP transaction is channel-wide state
 - Use message persistence with `Persistent` extension
-- Configure headers with `Header` extension
+- Configure headers with `Header` extension — a publish carries no argument table of its own,
+  so per-message key/value data goes here
 - Configure properties with `Property` extension
 - Non-transactional producers publish with confirmations: `PublishAsync` completes after the broker
-  confirms the message and throws when it is rejected
+  confirms the message and throws when it is rejected — it returns a plain `ValueTask`, success is
+  the absence of an exception
+
+## Tracing
+
+`RabbitMQ.Client` already emits a producer span per publish and a consumer span per delivery, and
+carries the trace context between them in the message headers — a handler runs inside the span of
+the publish that caused it. This library adds no span of its own; it records on the delivery span
+the one thing the client cannot know, how the message was settled:
+
+```csharp
+services.AddOpenTelemetry().WithTracing(tracing => tracing.AddSource(RabbitTracing.SourceNames));
+```
+
+- `snail.messaging.settlement` — `acked`, `requeued`, `rejected`, `retry_scheduled`, `parked`,
+  `dropped`, or `lost` when an auto-acknowledged message failed after the broker had settled it
+- `snail.messaging.attempt` — the 1-based attempt a retried delivery is on
+- `snail.messaging.poison` — set when the payload could not be deserialized
+
+A failed delivery also carries the exception and an error status, so a retry cycle is visible as a
+chain of traces rather than as silence. With no collector listening the client starts no activity
+and the whole thing costs one null check per delivery.
 
 ## Limitations
 
@@ -211,8 +264,8 @@ await producer.PublishAsync(payload, b => b
 - `RoutingKey` is `QueueName`/`ExchangeName` by default
 - Do not use same connection for consumers and producers because of tcp backpressure
 - RabbitMQ 4 rejects transient non-exclusive queues by default — declare consumer queues `Durable`
-- Messages dropped after `WithRetry` attempts are exhausted are logged but not parked;
-  add your own parking via `DeadLetterTo` on a differently shaped topology if you need to keep them
+- Pass `parkTo` to `WithRetry` to keep exhausted and poison messages for manual inspection;
+  without it they are logged and dropped
 
 ## License
 

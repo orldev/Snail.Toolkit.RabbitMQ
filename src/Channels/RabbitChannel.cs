@@ -20,13 +20,34 @@ public sealed class RabbitChannel(
     RabbitConnectionDeclaration connectionDeclaration,
     IChannel channel,
     ILogger<RabbitChannel> logger)
-    : IDisposable
+    : IDisposable, IAsyncDisposable
 {
     /// <summary>
     /// Gets the channel number assigned by the RabbitMQ server.
     /// </summary>
     public int ChannelNumber => channel.ChannelNumber;
-    
+
+    /// <summary>
+    /// Gets whether the underlying channel is still open and usable.
+    /// </summary>
+    /// <remarks>
+    /// A channel closed by a protocol error (an unroutable mandatory publish on a missing
+    /// exchange, a failed precondition) never recovers; callers holding a cached channel
+    /// check this before use and replace a dead one instead of failing forever.
+    /// </remarks>
+    public bool IsOpen => channel.IsOpen;
+
+    /// <summary>
+    /// Gets the lock that serializes transactional publishes on this channel.
+    /// </summary>
+    /// <remarks>
+    /// An AMQP transaction is channel-wide state: two interleaved publish-commit sequences on one
+    /// channel would commit each other's messages. Producers take this lock around publish plus
+    /// commit on transactional channels; confirmation-mode channels need no lock because the
+    /// client tracks each publish individually.
+    /// </remarks>
+    internal SemaphoreSlim PublishLock { get; } = new(1, 1);
+
     /// <summary>
     /// Gets the connection declaration associated with this channel.
     /// </summary>
@@ -213,8 +234,7 @@ public sealed class RabbitChannel(
         {
             // RabbitMQ.Client does not ignore PRECONDITION_FAILED
             // Means that queue is used or not empty, so just ignore exception
-            // TODO: Informative logging
-            logger.LogWarning($"Unable to delete '{declaration.Name}' queue");
+            logger.LogWarning("Unable to delete queue '{Queue}': it is still used or not empty", declaration.Name);
         }
     }
     #endregion
@@ -230,20 +250,24 @@ public sealed class RabbitChannel(
     /// <param name="declaration">The consumer declaration containing configuration.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
+    /// <returns>The broker-assigned tags of the started consumers, one per created consumer.</returns>
     /// <remarks>
     /// Creates multiple consumers if Count > 1 in the declaration,
     /// appending index numbers to consumer tags for identification.
+    /// The returned tags feed <see cref="BasicCancelAsync"/> on graceful shutdown.
     /// </remarks>
-    public async Task BasicConsumeAsync(
+    public async Task<IReadOnlyList<string>> BasicConsumeAsync(
     	IServiceProvider serviceProvider,
     	RabbitOptions options,
     	RabbitQueueDeclaration queue,
     	RabbitConsumerDeclaration declaration,
     	CancellationToken cancellationToken = default)
     {
+        var consumerTags = new List<string>((int)declaration.Count);
+
         for (var index = 0; index < declaration.Count; index++)
         {
-            await channel.BasicConsumeAsync(
+            consumerTags.Add(await channel.BasicConsumeAsync(
                 queue: queue.Name,
                 autoAck: declaration.AutoAck,
                 consumerTag: declaration.Tag is null
@@ -253,8 +277,21 @@ public sealed class RabbitChannel(
                 exclusive: declaration.Exclusive,
                 arguments: declaration.Arguments,
                 consumer: new RabbitConsumer(channel, options, serviceProvider, queue, declaration, logger),
-                cancellationToken: cancellationToken);
+                cancellationToken: cancellationToken));
         }
+
+        return consumerTags;
+    }
+
+    /// <summary>
+    /// Stops a consumer so no further deliveries arrive on its tag.
+    /// </summary>
+    /// <param name="consumerTag">The broker-assigned tag returned by <see cref="BasicConsumeAsync"/>.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    public async Task BasicCancelAsync(string consumerTag, CancellationToken cancellationToken = default)
+    {
+        await channel.BasicCancelAsync(consumerTag, noWait: false, cancellationToken);
     }
     
     /// <summary>
@@ -358,6 +395,15 @@ public sealed class RabbitChannel(
     public void Dispose()
     {
         channel.Dispose();
+    }
+
+    /// <summary>
+    /// Asynchronously disposes the channel and releases all resources.
+    /// </summary>
+    /// <returns>A task representing the asynchronous dispose operation.</returns>
+    public ValueTask DisposeAsync()
+    {
+        return channel.DisposeAsync();
     }
     
     /// <summary>

@@ -2,7 +2,6 @@ using System.Collections.Concurrent;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Snail.Toolkit.RabbitMQ.Channels;
-using Snail.Toolkit.RabbitMQ.Extensions;
 
 namespace Snail.Toolkit.RabbitMQ.Connections;
 
@@ -19,6 +18,8 @@ public interface IRabbitConnectionProvider
     /// <returns>A task that represents the asynchronous operation, containing the configured <see cref="RabbitConnection"/>.</returns>
     /// <remarks>
     /// Connections are cached by their declaration name for efficient reuse.
+    /// Concurrent first calls for one name share a single connection attempt,
+    /// so racing callers can never open and leak a second TCP connection.
     /// </remarks>
     Task<RabbitConnection> FromDeclaration(RabbitConnectionDeclaration connection,
         CancellationToken cancellationToken = default);
@@ -34,32 +35,71 @@ internal sealed class RabbitConnectionProvider(
     ILogger<RabbitChannel> channelLogger,
     ILogger<RabbitConnection> connectionLogger,
     IOptions<RabbitOptions> options)
-    : IRabbitConnectionProvider
+    : IRabbitConnectionProvider, IAsyncDisposable
 {
     private readonly RabbitOptions _options = options.Value;
-    private readonly ConcurrentDictionary<string, RabbitConnection> _connections = new();
+    private readonly ConcurrentDictionary<string, Lazy<Task<RabbitConnection>>> _connections = new();
 
     /// <inheritdoc/>
-    public Task<RabbitConnection> FromDeclaration(RabbitConnectionDeclaration declaration,
+    public async Task<RabbitConnection> FromDeclaration(RabbitConnectionDeclaration declaration,
         CancellationToken cancellationToken = default)
     {
-        return _connections.GetOrAddAsync(declaration.Name, async _ =>
+        var opening = _connections.GetOrAdd(
+            declaration.Name,
+            _ => new Lazy<Task<RabbitConnection>>(() => OpenAsync(declaration, cancellationToken)));
+
+        try
         {
-            var clientProvidedName = _options.ConnectionFactory.ClientProvidedName is null
-                ? declaration.Name
-                : $"{_options.ConnectionFactory.ClientProvidedName}.{declaration.Name}";
+            return await opening.Value;
+        }
+        catch
+        {
+            _connections.TryRemove(new KeyValuePair<string, Lazy<Task<RabbitConnection>>>(declaration.Name, opening));
+            throw;
+        }
+    }
 
-            var connectionFactory = await _options.ConnectionFactory.CreateConnectionAsync(clientProvidedName, cancellationToken);
-				
-            var connection = new RabbitConnection(
-                channelLogger,
-                declaration,
-                connectionFactory);
+    /// <summary>
+    /// Disposes every established connection so the broker sees a clean shutdown.
+    /// </summary>
+    /// <returns>A task representing the asynchronous dispose operation.</returns>
+    public async ValueTask DisposeAsync()
+    {
+        foreach (var name in _connections.Keys)
+        {
+            if (!_connections.TryRemove(name, out var opening) || !opening.IsValueCreated)
+            {
+                continue;
+            }
 
-            EnsureLogging(connection);
+            if (opening.Value is { IsCompletedSuccessfully: true } opened)
+            {
+                await (await opened).DisposeAsync();
+            }
+        }
+    }
 
-            return connection;
-        });
+    /// <summary>
+    /// Opens one RabbitMQ connection for the declaration and wires up its event logging.
+    /// </summary>
+    /// <param name="declaration">The connection declaration to open.</param>
+    /// <param name="cancellationToken">A token to observe while waiting for the task to complete.</param>
+    /// <returns>A task that represents the asynchronous operation, containing the established connection.</returns>
+    private async Task<RabbitConnection> OpenAsync(RabbitConnectionDeclaration declaration,
+        CancellationToken cancellationToken)
+    {
+        var clientProvidedName = _options.ConnectionFactory.ClientProvidedName is null
+            ? declaration.Name
+            : $"{_options.ConnectionFactory.ClientProvidedName}.{declaration.Name}";
+
+        var connection = new RabbitConnection(
+            channelLogger,
+            declaration,
+            await _options.ConnectionFactory.CreateConnectionAsync(clientProvidedName, cancellationToken));
+
+        EnsureLogging(connection);
+
+        return connection;
     }
 
     /// <summary>
@@ -68,7 +108,7 @@ internal sealed class RabbitConnectionProvider(
     /// <param name="connection">The connection to configure logging for.</param>
     private void EnsureLogging(RabbitConnection connection)
     {
-        connectionLogger.LogInformation("Connection '{ClientProvidedName}' established", 
+        connectionLogger.LogInformation("Connection '{ClientProvidedName}' established",
             connection.ClientProvidedName);
 
         connection.CallbackExceptionAsync += (_, args) =>
@@ -78,7 +118,7 @@ internal sealed class RabbitConnectionProvider(
                 "Connection: {Name}", connection.ConnectionDeclaration.Name);
             return Task.CompletedTask;
         };
-			
+
         connection.ConnectionBlockedAsync += (_, args) =>
         {
             connectionLogger.LogError(
@@ -86,7 +126,7 @@ internal sealed class RabbitConnectionProvider(
                 connection.ConnectionDeclaration.Name, args.Reason);
             return Task.CompletedTask;
         };
-			
+
         connection.ConnectionShutdownAsync += (_, args) =>
         {
             connectionLogger.LogInformation(
@@ -94,7 +134,7 @@ internal sealed class RabbitConnectionProvider(
                 connection.ConnectionDeclaration.Name, args.Cause);
             return Task.CompletedTask;
         };
-			
+
         connection.ConnectionUnblockedAsync += (_, args) =>
         {
             connectionLogger.LogInformation(
@@ -110,7 +150,7 @@ internal sealed class RabbitConnectionProvider(
                 connection.ConnectionDeclaration.Name);
             return Task.CompletedTask;
         };
-			
+
         connection.ConnectionRecoveryErrorAsync += (_, args) =>
         {
             connectionLogger.LogError(args.Exception,

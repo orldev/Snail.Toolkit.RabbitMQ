@@ -13,9 +13,25 @@ public static class RabbitQueueBuilderExtensions
     /// <typeparam name="T">The type associated with the queue.</typeparam>
     /// <param name="builder">The queue builder instance.</param>
     /// <returns>The same builder instance for method chaining.</returns>
+    /// <remarks>
+    /// Durability is mirrored onto the companion retry and parking queues regardless of
+    /// whether WithRetry was called before or after this method, so the whole retry
+    /// topology always shares one durability setting.
+    /// </remarks>
     public static IRabbitQueueBuilder<T> Durable<T>(this IRabbitQueueBuilder<T> builder)
     {
         builder.Declaration.Durable = true;
+
+        if (builder.Declaration.RetryQueue is { } retry)
+        {
+            retry.Durable = true;
+        }
+
+        if (builder.Declaration.ParkingQueue is { } parking)
+        {
+            parking.Durable = true;
+        }
+
         return builder;
     }
 
@@ -309,18 +325,22 @@ public static class RabbitQueueBuilderExtensions
     /// <typeparam name="T">The type associated with the queue.</typeparam>
     /// <param name="builder">The queue builder instance.</param>
     /// <param name="delay">How long a rejected message waits before redelivery.</param>
-    /// <param name="maxAttempts">Total processing attempts per message; once exhausted the message is acknowledged, logged and dropped.</param>
+    /// <param name="maxAttempts">Total processing attempts per message; once exhausted the message is parked, or acknowledged and dropped when no parking queue is configured.</param>
+    /// <param name="parkTo">Optional name of a parking queue that keeps exhausted and poison messages for manual inspection instead of dropping them.</param>
     /// <returns>The same builder instance for method chaining.</returns>
     /// <exception cref="InvalidOperationException">Thrown if a dead letter exchange is already configured on the queue.</exception>
     /// <remarks>
     /// The queue's dead letter exchange is pointed at the companion retry queue via the default exchange,
     /// so WithRetry cannot be combined with <see cref="DeadLetterTo{T}(IRabbitQueueBuilder{T}, IRabbitExchangeBuilder{T}, string?)"/>.
-    /// The companion queue is declared automatically alongside this queue and mirrors its durability.
+    /// The companion queues are declared automatically alongside this queue and mirror its durability.
+    /// Poison messages bypass the retry cycle: a deserialization failure is deterministic, so they are
+    /// parked immediately, or dropped when no parking queue is configured.
     /// </remarks>
     public static IRabbitQueueBuilder<T> WithRetry<T>(
         this IRabbitQueueBuilder<T> builder,
         TimeSpan delay,
-        int maxAttempts = 3)
+        int maxAttempts = 3,
+        string? parkTo = null)
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(maxAttempts, 1);
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(delay, TimeSpan.Zero);
@@ -330,13 +350,27 @@ public static class RabbitQueueBuilderExtensions
                 $"Queue '{builder.Declaration.Name}' already has a dead letter exchange configured; WithRetry cannot be combined with DeadLetterTo");
 
         var retryName = $"{builder.Declaration.Name}.retry";
-        var retry = new RabbitQueueDeclaration(builder.Declaration.ConnectionDeclaration, retryName);
+        var retry = new RabbitQueueDeclaration(builder.Declaration.ConnectionDeclaration, retryName)
+        {
+            Durable = builder.Declaration.Durable
+        };
         retry.Arguments.Add("x-message-ttl", (int)delay.TotalMilliseconds);
         retry.Arguments.Add("x-dead-letter-exchange", string.Empty);
         retry.Arguments.Add("x-dead-letter-routing-key", builder.Declaration.Name);
 
         builder.Declaration.RetryQueue = retry;
         builder.Declaration.MaxAttempts = maxAttempts;
+
+        if (parkTo is not null)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(parkTo);
+
+            builder.Declaration.ParkingQueue = new RabbitQueueDeclaration(
+                builder.Declaration.ConnectionDeclaration, parkTo)
+            {
+                Durable = builder.Declaration.Durable
+            };
+        }
 
         return builder
             .Argument("x-dead-letter-exchange", string.Empty)
@@ -385,13 +419,21 @@ public static class RabbitQueueBuilderExtensions
     /// <param name="argument">The argument name.</param>
     /// <param name="value">The argument value.</param>
     /// <returns>The same builder instance for method chaining.</returns>
-    /// <remarks>This method allows setting any RabbitMQ queue argument not explicitly covered by other methods.</remarks>
+    /// <exception cref="InvalidOperationException">Thrown when the argument is already configured on the queue.</exception>
+    /// <remarks>
+    /// This method allows setting any RabbitMQ queue argument not explicitly covered by other methods.
+    /// A duplicate argument fails with a message naming the queue and the argument, instead of the
+    /// dictionary's generic duplicate-key error surfacing from deep inside a builder chain.
+    /// </remarks>
     public static IRabbitQueueBuilder<T> Argument<T>(
         this IRabbitQueueBuilder<T> builder,
         string argument,
         object value)
     {
-        builder.Declaration.Arguments.Add(argument, value);
+        if (!builder.Declaration.Arguments.TryAdd(argument, value))
+            throw new InvalidOperationException(
+                $"Queue '{builder.Declaration.Name}' already has the '{argument}' argument configured");
+
         return builder;
     }
 }

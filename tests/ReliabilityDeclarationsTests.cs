@@ -59,6 +59,53 @@ public class ReliabilityDeclarationsTests
     }
 
     [Fact]
+    public void WithRetry_WithParkTo_ConfiguresParkingQueueMirroringDurability()
+    {
+        var services = new ServiceCollection();
+
+        services.AddRabbit(o => o
+                .UseConnectionUrl("amqp://test.test")
+                .UseClientProvidedName("test"),
+            cs => cs
+                .AddConnection("connection",
+                    c => c
+                        .AddQueue<string>("queue")
+                        .WithRetry(TimeSpan.FromSeconds(5), maxAttempts: 4, parkTo: "queue.failed")
+                        .Durable()));
+
+        var provider = services.BuildServiceProvider();
+
+        var declaration = Assert.Single(
+            provider.GetRequiredService<IOptions<RabbitOptions>>().Value.QueueDeclarations);
+
+        var parking = declaration.ParkingQueue;
+        Assert.NotNull(parking);
+        Assert.Equal("queue.failed", parking.Name);
+        Assert.True(parking.Durable);
+        Assert.True(declaration.RetryQueue!.Durable);
+    }
+
+    [Fact]
+    public void QueueArgument_Duplicate_ThrowsWithQueueAndArgumentNamed()
+    {
+        var services = new ServiceCollection();
+
+        var exception = Assert.Throws<InvalidOperationException>(() =>
+            services.AddRabbit(o => o
+                    .UseConnectionUrl("amqp://test.test")
+                    .UseClientProvidedName("test"),
+                cs => cs
+                    .AddConnection("connection",
+                        c => c
+                            .AddQueue<string>("queue")
+                            .Quorum()
+                            .Quorum())));
+
+        Assert.Contains("queue", exception.Message, StringComparison.Ordinal);
+        Assert.Contains("x-queue-type", exception.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void QueueTimeToLive_UsesTotalMilliseconds()
     {
         var services = new ServiceCollection();

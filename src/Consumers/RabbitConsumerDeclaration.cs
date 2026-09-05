@@ -20,6 +20,16 @@ public sealed class RabbitConsumerDeclaration(
     RabbitQueueDeclaration[] queueDeclarations)
 {
     /// <summary>
+    /// The prefetch count applied when the consumer does not configure one.
+    /// </summary>
+    /// <remarks>
+    /// An unlimited prefetch is a poor default for at-least-once delivery: the broker would
+    /// push the whole queue to a single consumer, which defeats the point of running several
+    /// and makes memory use unbounded. Callers who want that can still ask for it explicitly.
+    /// </remarks>
+    public const ushort DefaultPrefetchCount = 10;
+
+    /// <summary>
     /// Gets the type of message payload this consumer will handle.
     /// </summary>
     public Type PayloadType { get; } = payloadType;
@@ -48,7 +58,11 @@ public sealed class RabbitConsumerDeclaration(
     /// <summary>
     /// Gets or sets the prefetch count (QoS) limiting unacknowledged messages.
     /// </summary>
-    public ushort PrefetchCount { get; set; }
+    /// <value>
+    /// Defaults to <see cref="DefaultPrefetchCount"/>; zero means an unlimited prefetch,
+    /// which lets one consumer pull a whole queue into memory.
+    /// </value>
+    public ushort PrefetchCount { get; set; } = DefaultPrefetchCount;
 
     /// <summary>
     /// Gets or sets whether the prefetch limit is applied globally across all consumers on the channel.
@@ -79,11 +93,6 @@ public sealed class RabbitConsumerDeclaration(
     /// Gets or sets whether failed messages should be requeued.
     /// </summary>
     public bool Requeue { get; set; }
-
-    /// <summary>
-    /// Gets or sets whether to negatively acknowledge multiple messages when requeuing.
-    /// </summary>
-    public bool Multiple { get; set; }
 
     /// <summary>
     /// Gets additional arguments that can be used when consuming messages.

@@ -1,4 +1,3 @@
-using System.Reflection;
 using Microsoft.Extensions.Logging;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
@@ -16,12 +15,12 @@ public sealed class RabbitConnection(
     ILogger<RabbitChannel> logger,
     RabbitConnectionDeclaration connectionDeclaration,
     IConnection connection)
-    : IDisposable
+    : IDisposable, IAsyncDisposable
 {
     /// <summary>
-    /// Gets the client-provided name for this connection, falling back to the assembly name or "default" if not specified.
+    /// Gets the client-provided name for this connection, falling back to the declaration name.
     /// </summary>
-    public string ClientProvidedName => connection.ClientProvidedName ?? Assembly.GetCallingAssembly().GetName().Name ?? "default";
+    public string ClientProvidedName => connection.ClientProvidedName ?? ConnectionDeclaration.Name;
 
     /// <summary>
     /// Gets the connection declaration containing the configuration for this connection.
@@ -72,6 +71,15 @@ public sealed class RabbitConnection(
     public void Dispose()
     {
         connection.Dispose();
+    }
+
+    /// <summary>
+    /// Asynchronously releases all resources used by the RabbitMQ connection.
+    /// </summary>
+    /// <returns>A task representing the asynchronous dispose operation.</returns>
+    public ValueTask DisposeAsync()
+    {
+        return connection.DisposeAsync();
     }
 
     /// <summary>

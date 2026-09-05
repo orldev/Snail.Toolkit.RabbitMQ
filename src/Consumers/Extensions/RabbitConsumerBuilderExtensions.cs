@@ -186,14 +186,16 @@ public static class RabbitConsumerBuilderExtensions
     /// </summary>
     /// <typeparam name="T">The type of message payload to handle.</typeparam>
     /// <param name="builder">The consumer builder instance.</param>
-    /// <param name="multiple">Whether to negatively acknowledge multiple messages.</param>
     /// <returns>The same builder instance for method chaining.</returns>
-    public static IRabbitConsumerBuilder<T> Requeue<T>(
-        this IRabbitConsumerBuilder<T> builder,
-        bool multiple = false)
+    /// <remarks>
+    /// A failed message is requeued once, on its own. Batch settlement is deliberately not
+    /// offered: every consumer of one declaration shares a channel, so acknowledging or
+    /// rejecting "everything up to this delivery tag" would settle messages that belong to
+    /// the other consumers and are still being handled.
+    /// </remarks>
+    public static IRabbitConsumerBuilder<T> Requeue<T>(this IRabbitConsumerBuilder<T> builder)
     {
         builder.ConsumerDeclaration.Requeue = true;
-        builder.ConsumerDeclaration.Multiple = multiple;
         return builder;
     }
 

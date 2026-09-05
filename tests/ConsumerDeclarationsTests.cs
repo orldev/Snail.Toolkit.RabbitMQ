@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Snail.Toolkit.RabbitMQ.Consumers;
 using Snail.Toolkit.RabbitMQ.Consumers.Extensions;
 using Snail.Toolkit.RabbitMQ.Extensions;
 using Snail.Toolkit.RabbitMQ.Queues.Extensions;
@@ -32,9 +33,8 @@ public class ConsumerDeclarationsTests
         Assert.Equal(1u, declaration.Count);
         Assert.False(declaration.Exclusive);
         Assert.False(declaration.Global);
-        Assert.False(declaration.Multiple);
         Assert.False(declaration.NoLocal);
-        Assert.Equal(0, declaration.PrefetchCount);
+        Assert.Equal(RabbitConsumerDeclaration.DefaultPrefetchCount, declaration.PrefetchCount);
         Assert.Equal("queue", Assert.Single(declaration.QueueDeclarations).Name);
         Assert.Equal("connection", declaration.ConnectionDeclaration.Name);
         Assert.False(declaration.Requeue);
@@ -57,7 +57,7 @@ public class ConsumerDeclarationsTests
                         .AutoAck()
                         .Count(2)
                         .Exclusive()
-                        .Requeue(true)
+                        .Requeue()
                         .NoLocal()
                         .Prefetch(2)
                         .Tagged("tag")));
@@ -77,7 +77,6 @@ public class ConsumerDeclarationsTests
         Assert.True(declaration.Exclusive);
         Assert.False(declaration.Global);
         Assert.Equal("consumers", declaration.ConnectionDeclaration.Name);
-        Assert.True(declaration.Multiple);
         Assert.True(declaration.NoLocal);
         Assert.Equal(2, declaration.PrefetchCount);
         Assert.Equal("queue", Assert.Single(declaration.QueueDeclarations).Name);

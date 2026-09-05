@@ -67,8 +67,9 @@ internal sealed class RabbitExchangeHostedService(
     /// <param name="cancellationToken">A token to observe while waiting for the task to complete.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
     /// <remarks>
-    /// This implementation performs no operations during service stop as connections
-    /// and channels are disposed automatically when the service provider is disposed.
+    /// This implementation performs no operations during service stop: its channels are
+    /// short-lived and already closed after StartAsync, and the shared connections are
+    /// closed by the connection provider when the service provider is disposed.
     /// </remarks>
     public Task StopAsync(CancellationToken cancellationToken)
     {

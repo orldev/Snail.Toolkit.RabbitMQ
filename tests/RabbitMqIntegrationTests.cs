@@ -165,8 +165,8 @@ public sealed class RabbitMqIntegrationTests(RabbitMqContainerFixture fixture)
 
         // An int cannot be deserialized into the consumer's string payload: a poison message.
         // With Prefetch(1) an unacked poison message would stall the consumer forever.
-        Assert.True(await producer.PublishAsync(12345));
-        Assert.True(await producer.PublishAsync("hello"));
+        await producer.PublishAsync(12345);
+        await producer.PublishAsync("hello");
 
         Assert.Equal("hello", await WaitAsync(received.Task));
     }
@@ -201,7 +201,7 @@ public sealed class RabbitMqIntegrationTests(RabbitMqContainerFixture fixture)
             }));
 
         var producer = provider.GetRequiredService<IRabbitProducer>();
-        Assert.True(await producer.PublishAsync("retry-me"));
+        await producer.PublishAsync("retry-me");
 
         Assert.Equal(3, await WaitAsync(succeeded.Task));
     }
@@ -236,7 +236,7 @@ public sealed class RabbitMqIntegrationTests(RabbitMqContainerFixture fixture)
             }));
 
         var producer = provider.GetRequiredService<IRabbitProducer>();
-        Assert.True(await producer.PublishAsync("bad"));
+        await producer.PublishAsync("bad");
 
         await WaitUntilAsync(() => Volatile.Read(ref badAttempts) == 2);
 
@@ -244,7 +244,7 @@ public sealed class RabbitMqIntegrationTests(RabbitMqContainerFixture fixture)
         await Task.Delay(700);
         Assert.Equal(2, Volatile.Read(ref badAttempts));
 
-        Assert.True(await producer.PublishAsync("good"));
+        await producer.PublishAsync("good");
         Assert.Equal("good", await WaitAsync(received.Task));
     }
 

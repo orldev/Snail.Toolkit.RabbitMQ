@@ -65,14 +65,6 @@ public sealed class RabbitProducerDeclaration(
     public bool Transactional { get; set; }
 
     /// <summary>
-    /// Gets or sets additional arguments that can be used when publishing messages.
-    /// </summary>
-    /// <remarks>
-    /// These arguments may be used by RabbitMQ plugins or for custom routing logic.
-    /// </remarks>
-    public IDictionary<string, object> Arguments { get; set; } = new Dictionary<string, object>();
-
-    /// <summary>
     /// Gets or sets a list of actions that configure message properties.
     /// </summary>
     /// <remarks>
@@ -87,7 +79,7 @@ public sealed class RabbitProducerDeclaration(
     /// <param name="declaration">The source declaration to copy.</param>
     /// <returns>A new <see cref="RabbitProducerDeclaration"/> with the same configuration.</returns>
     /// <remarks>
-    /// This method performs a deep copy of all mutable properties (Arguments and Properties)
+    /// This method copies the mutable <see cref="Properties"/> list
     /// to ensure modifications to the new declaration don't affect the original.
     /// </remarks>
     public static RabbitProducerDeclaration FromDeclaration(RabbitProducerDeclaration declaration)
@@ -100,7 +92,6 @@ public sealed class RabbitProducerDeclaration(
             RoutingKey = declaration.RoutingKey,
             Mandatory = declaration.Mandatory,
             Transactional = declaration.Transactional,
-            Arguments = new Dictionary<string, object>(declaration.Arguments),
             Properties = new List<Action<IBasicProperties>>(declaration.Properties)
         };
     }

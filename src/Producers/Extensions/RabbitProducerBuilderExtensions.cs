@@ -245,23 +245,7 @@ public static class RabbitProducerBuilderExtensions
         });
     }
 
-    /// <summary>
-    /// Adds a custom argument to the producer declaration.
-    /// </summary>
-    /// <typeparam name="T">The type of message being produced.</typeparam>
-    /// <param name="builder">The producer builder instance.</param>
-    /// <param name="argument">The argument name.</param>
-    /// <param name="value">The argument value.</param>
-    /// <returns>The same builder instance for method chaining.</returns>
-    /// <remarks>
-    /// These arguments may be used by RabbitMQ plugins or for custom exchange implementations.
-    /// </remarks>
-    public static IRabbitProducerBuilder<T> Argument<T>(
-        this IRabbitProducerBuilder<T> builder,
-        string argument,
-        object value)
-    {
-        builder.ProducerDeclaration.Arguments.Add(argument, value);
-        return builder;
-    }
+    // A publish carries no argument table of its own: basic.publish has an exchange, a routing
+    // key, flags and message properties, nothing else. Per-message key/value data belongs in
+    // Header, which lands in the properties the broker actually delivers.
 }

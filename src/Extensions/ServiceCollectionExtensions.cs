@@ -103,13 +103,30 @@ public static class ServiceCollectionExtensions
         
         ArgumentNullException.ThrowIfNull(options);
         
-        var builder = services.AddOptions(o => 
+        var builder = services.AddOptions(o =>
             o.UseConnectionFactory(client =>
             {
                 client.HostName = options.HostName;
+                client.Port = options.Port;
+                client.VirtualHost = options.VirtualHost;
                 client.UserName = options.UserName;
                 client.Password = options.Password;
                 client.ClientProvidedName = options.ClientProvidedName;
+
+                if (!options.Ssl.Enabled)
+                {
+                    return;
+                }
+
+                client.Ssl.Enabled = true;
+                // An unset server name fails certificate validation rather than skipping it,
+                // so it defaults to the host the connection is opened against.
+                client.Ssl.ServerName = options.Ssl.ServerName ?? options.HostName;
+                if (options.Ssl.CertPath is { } certPath)
+                {
+                    client.Ssl.CertPath = certPath;
+                    client.Ssl.CertPassphrase = options.Ssl.CertPassphrase;
+                }
             }));
         
         connections.Invoke(builder);

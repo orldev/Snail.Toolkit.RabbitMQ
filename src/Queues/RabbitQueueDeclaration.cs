@@ -77,10 +77,21 @@ public sealed class RabbitQueueDeclaration(
     public RabbitQueueDeclaration? RetryQueue { get; internal set; }
 
     /// <summary>
-    /// Gets the maximum number of processing attempts per message before it is dropped.
+    /// Gets the maximum number of processing attempts per message before it is dropped or parked.
     /// </summary>
     /// <value>Meaningful only when <see cref="RetryQueue"/> is configured.</value>
     public int MaxAttempts { get; internal set; }
+
+    /// <summary>
+    /// Gets the parking queue declaration where messages land once the retry budget is exhausted.
+    /// </summary>
+    /// <value>Null means exhausted messages are acknowledged and dropped.</value>
+    /// <remarks>
+    /// Configured via the WithRetry queue builder extension; not intended to be set directly.
+    /// Poison messages are parked immediately: a deserialization failure is deterministic,
+    /// so sending it through the retry cycle would change nothing.
+    /// </remarks>
+    public RabbitQueueDeclaration? ParkingQueue { get; internal set; }
 
     /// <summary>
     /// Gets additional queue arguments that can be used to configure advanced queue features.

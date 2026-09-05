@@ -41,17 +41,26 @@ internal sealed class RabbitQueueHostedService(
                 {
                     await channel.QueueDeleteAsync(declaration.RetryQueue, cancellationToken);
                 }
+
+                if (declaration.ParkingQueue is not null)
+                {
+                    await channel.QueueDeleteAsync(declaration.ParkingQueue, cancellationToken);
+                }
             }
             else
             {
                 if (declaration.RetryQueue is not null)
                 {
                     // Declared before the main queue so its dead letter target already exists
-                    declaration.RetryQueue.Durable = declaration.Durable;
                     await channel.QueueDeclareAsync(declaration.RetryQueue, cancellationToken);
                 }
 
-                 await channel.QueueDeclareAsync(declaration, cancellationToken);
+                if (declaration.ParkingQueue is not null)
+                {
+                    await channel.QueueDeclareAsync(declaration.ParkingQueue, cancellationToken);
+                }
+
+                await channel.QueueDeclareAsync(declaration, cancellationToken);
 
                 foreach (var binding in declaration.BindingDeclarations)
                 {

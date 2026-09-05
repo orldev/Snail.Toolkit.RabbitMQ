@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Snail.Toolkit.RabbitMQ.Channels;
 
@@ -17,8 +18,8 @@ public interface IRabbitProducer
     /// <param name="overrides">Optional action to override default producer configuration.</param>
     /// <param name="cancellationToken">A token to observe while waiting for the task to complete.</param>
     /// <returns>
-    /// A <see cref="ValueTask{TResult}"/> that completes with true if the message was published successfully,
-    /// or throws an exception if publishing fails.
+    /// A <see cref="ValueTask"/> that completes once the broker accepts the message,
+    /// and throws when publishing fails.
     /// </returns>
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="payload"/> is null.</exception>
     /// <exception cref="RabbitMissingDeclarationException">
@@ -33,13 +34,14 @@ public interface IRabbitProducer
     ///
     /// Non-transactional producers publish on channels with publisher confirmations enabled:
     /// the returned task completes only after the broker confirms the message and throws
-    /// when the broker rejects it.
+    /// when the broker rejects it. Transactional publishes are serialized per channel,
+    /// because an AMQP transaction is channel-wide state that concurrent publishes would corrupt.
     /// </remarks>
-    ValueTask<bool> PublishAsync<T>(
+    ValueTask PublishAsync<T>(
         [DisallowNull] T payload,
         Action<IRabbitProducerBuilder<T>>? overrides = null,
         CancellationToken cancellationToken = default);
-    
+
 }
 
 /// <summary>
@@ -47,51 +49,78 @@ public interface IRabbitProducer
 /// </summary>
 /// <param name="options">The RabbitMQ configuration options.</param>
 /// <param name="channelProvider">The channel provider for obtaining RabbitMQ channels.</param>
+/// <param name="logger">The logger for producer diagnostics.</param>
 /// <remarks>
 /// This implementation handles:
 /// - Message serialization using the configured serializer
-/// - Transaction management (commit/rollback)
+/// - Transaction management (commit/rollback), serialized per channel
 /// - Channel lifecycle management
 /// - Configuration overrides
 /// </remarks>
 internal sealed class RabbitProducer(
     IOptions<RabbitOptions> options,
-    IRabbitChannelProvider channelProvider)
+    IRabbitChannelProvider channelProvider,
+    ILogger<RabbitProducer> logger)
     : IRabbitProducer
 {
     private readonly RabbitOptions _options = options.Value;
 
     /// <inheritdoc/>
-    public async ValueTask<bool> PublishAsync<T>(
+    public async ValueTask PublishAsync<T>(
         [DisallowNull] T payload,
         Action<IRabbitProducerBuilder<T>>? overrides = null,
         CancellationToken cancellationToken = default)
     {
         var declaration = GetDeclaration(overrides);
         var channel = await channelProvider.FromDeclaration(declaration, cancellationToken);
-        
+        var body = _options.Serializer(payload);
+
+        if (!declaration.Transactional)
+        {
+            await channel.BasicPublishAsync(declaration, body, cancellationToken);
+            return;
+        }
+
+        await channel.PublishLock.WaitAsync(cancellationToken);
         try
         {
-            await channel.BasicPublishAsync(declaration, _options.Serializer(payload), cancellationToken);
-
-            if (declaration.Transactional)
-            {
-                await channel.TxCommitAsync(cancellationToken);
-            }
-            
-            return true;
+            await channel.BasicPublishAsync(declaration, body, cancellationToken);
+            await channel.TxCommitAsync(cancellationToken);
         }
         catch
         {
-            if (declaration.Transactional)
-            {
-                await channel.TxRollbackAsync(cancellationToken);
-            }
-
+            await TryRollbackAsync(channel, cancellationToken);
             throw;
         }
+        finally
+        {
+            channel.PublishLock.Release();
+        }
     }
-    
+
+    /// <summary>
+    /// Rolls back the channel's transaction without masking the publish failure being handled.
+    /// </summary>
+    /// <param name="channel">The transactional channel to roll back.</param>
+    /// <param name="cancellationToken">A token to observe while waiting for the task to complete.</param>
+    /// <remarks>
+    /// A publish often fails because the channel itself just died, in which case the rollback
+    /// fails too; that secondary failure is logged so the caller sees the original exception.
+    /// </remarks>
+    private async Task TryRollbackAsync(RabbitChannel channel, CancellationToken cancellationToken)
+    {
+        try
+        {
+            await channel.TxRollbackAsync(cancellationToken);
+        }
+        catch (Exception exception)
+        {
+            logger.LogError(exception,
+                "Transaction rollback failed on connection '{Name}'; the original publish failure is rethrown",
+                channel.ConnectionDeclaration.Name);
+        }
+    }
+
     /// <summary>
     /// Gets the producer declaration, applying any configuration overrides.
     /// </summary>
