@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="benchmarks/Snail.Toolkit.RabbitMQ.Benchmarks/Snail.Toolkit.RabbitMQ.Benchmarks.csproj" />
+  <Project Path="src/Snail.Toolkit.RabbitMQ.csproj" />
+  <Project Path="tests/Snail.Toolkit.RabbitMQ.NativeProbe/Snail.Toolkit.RabbitMQ.NativeProbe.csproj" />
+  <Project Path="tests/Snail.Toolkit.RabbitMQ.Tests.csproj" />
+</Solution>

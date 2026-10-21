@@ -1,0 +1,42 @@
+name: release to NuGet
+
+# A version tag (v1.2.0, v1.2.0-preview.1) releases every package at that version; run by hand, it packs and checks
+# them and pushes only when asked to. The shared workflow builds, tests and packs; the push is a job of this file
+# because nuget.org gives a trusted publishing key only to a job of the workflow file its policy names in this
+# repository (job_workflow_ref): this publish.yml, with the secret NUGET_USER.
+
+on:
+  push:
+    tags: ['v[0-9]+.[0-9]+.[0-9]+*']
+  workflow_dispatch:
+    inputs:
+      version:
+        description: The version to pack, such as 0.3.0 or 0.3.0-preview.1
+        required: true
+      push:
+        description: Push the packages to NuGet
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    uses: orldev/Snail.Sdk/.github/workflows/lib-publish.yml@v1
+    with:
+      version: ${{ inputs.version }}
+      push: ${{ github.event_name == 'push' || inputs.push }}
+    secrets: inherit
+
+  push:
+    needs: release
+    if: needs.release.outputs.push == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: orldev/Snail.Sdk/.github/actions/nuget-push@v1
+        with:
+          user: ${{ secrets.NUGET_USER }}

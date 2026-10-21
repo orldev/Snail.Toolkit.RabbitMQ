@@ -1,0 +1,38 @@
+<Project Sdk="Snail.Sdk.Library">
+
+    <PropertyGroup>
+        <PackageId>Snail.Toolkit.RabbitMQ</PackageId>
+        <PackageTags>RabbitMQ.Client;RabbitMQ;AMQP;messaging;publisher-confirms;retry;dead-letter</PackageTags>
+        <Title>Snail.Toolkit.RabbitMQ</Title>
+        <Authors>orldev</Authors>
+        <Description>Declarative extension for RabbitMQ.Client: fluent typed topology (connections, exchanges, queues, bindings, consumers, producers) with reliability by default — publisher confirmations, poison message rejection, retry with backoff via companion retry queues, message and correlation ids.</Description>
+        <Copyright>Toolkit, 2023-2026</Copyright>
+        <PackageProjectUrl>https://github.com/orldev/Snail.Toolkit.RabbitMQ</PackageProjectUrl>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>
+    </PropertyGroup>
+    
+    <ItemGroup>
+        <None Include="..\README.md" Pack="true" PackagePath="\"/>
+    </ItemGroup>
+    
+    <ItemGroup>
+        <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+            <_Parameter1>Snail.Toolkit.RabbitMQ.Tests</_Parameter1>
+        </AssemblyAttribute>
+        <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+            <_Parameter1>Snail.Toolkit.RabbitMQ.Benchmarks</_Parameter1>
+        </AssemblyAttribute>
+        <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+            <_Parameter1>Snail.Toolkit.RabbitMQ.NativeProbe</_Parameter1>
+        </AssemblyAttribute>
+    </ItemGroup>
+    
+    <ItemGroup>
+        <PackageReference Include="RabbitMQ.Client" />
+        <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
+    </ItemGroup>
+
+</Project>

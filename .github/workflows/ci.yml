@@ -1,0 +1,16 @@
+name: build and tests
+
+# The shared library CI of Snail.Sdk: the tests, the API reference the build writes, the package validated against
+# the last release.
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    uses: orldev/Snail.Sdk/.github/workflows/lib-ci.yml@v1

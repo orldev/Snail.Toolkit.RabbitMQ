@@ -1,0 +1,464 @@
+using Microsoft.Extensions.Logging;
+using RabbitMQ.Client;
+using RabbitMQ.Client.Events;
+using RabbitMQ.Client.Exceptions;
+using Snail.Toolkit.RabbitMQ.Connections;
+using Snail.Toolkit.RabbitMQ.Consumers;
+using Snail.Toolkit.RabbitMQ.Exchanges;
+using Snail.Toolkit.RabbitMQ.Producers;
+using Snail.Toolkit.RabbitMQ.Queues;
+
+namespace Snail.Toolkit.RabbitMQ.Channels;
+
+/// <summary>
+/// Represents a RabbitMQ channel wrapper that provides higher-level operations for exchanges, queues, producers and consumers.
+/// </summary>
+/// <param name="connectionDeclaration">The connection declaration this channel belongs to.</param>
+/// <param name="channel">The underlying RabbitMQ channel.</param>
+/// <param name="logger">The logger instance for logging channel operations.</param>
+public sealed class RabbitChannel(
+    RabbitConnectionDeclaration connectionDeclaration,
+    IChannel channel,
+    ILogger<RabbitChannel> logger)
+    : IDisposable, IAsyncDisposable
+{
+    /// <summary>
+    /// Gets the channel number assigned by the RabbitMQ server.
+    /// </summary>
+    public int ChannelNumber => channel.ChannelNumber;
+
+    /// <summary>
+    /// Gets whether the underlying channel is still open and usable.
+    /// </summary>
+    /// <remarks>
+    /// A channel closed by a protocol error (an unroutable mandatory publish on a missing
+    /// exchange, a failed precondition) never recovers; callers holding a cached channel
+    /// check this before use and replace a dead one instead of failing forever.
+    /// </remarks>
+    public bool IsOpen => channel.IsOpen;
+
+    /// <summary>
+    /// Gets the lock that serializes transactional publishes on this channel.
+    /// </summary>
+    /// <remarks>
+    /// An AMQP transaction is channel-wide state: two interleaved publish-commit sequences on one
+    /// channel would commit each other's messages. Producers take this lock around publish plus
+    /// commit on transactional channels; confirmation-mode channels need no lock because the
+    /// client tracks each publish individually.
+    /// </remarks>
+    internal SemaphoreSlim PublishLock { get; } = new(1, 1);
+
+    /// <summary>
+    /// Gets whether the channel was opened with publisher confirmations, which make the client add headers to a publish.
+    /// </summary>
+    internal bool TracksConfirmations { get; init; }
+
+    /// <summary>
+    /// Gets the connection declaration associated with this channel.
+    /// </summary>
+    public RabbitConnectionDeclaration ConnectionDeclaration { get; } = connectionDeclaration;
+
+    /// <summary>
+    /// Declares an exchange on the RabbitMQ server.
+    /// </summary>
+    /// <param name="declaration">The exchange declaration containing configuration parameters.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    public async Task ExchangeDeclareAsync(
+        RabbitExchangeDeclaration declaration,
+        CancellationToken cancellationToken = default)
+    {
+        await channel.ExchangeDeclareAsync(
+            exchange: declaration.Name,
+            type: declaration.Type,
+            durable: declaration.Durable,
+            autoDelete: declaration.AutoDelete,
+            arguments: declaration.Arguments,
+            passive: false,
+            noWait: declaration.NoWait,
+            cancellationToken: cancellationToken);
+    }
+
+    /// <summary>
+    /// Binds an exchange to another exchange.
+    /// </summary>
+    /// <param name="declaration">The destination exchange declaration.</param>
+    /// <param name="binding">The binding declaration containing source exchange and routing information.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    public async Task ExchangeBindAsync(
+        RabbitExchangeDeclaration declaration,
+        RabbitExchangeBindingDeclaration binding,
+        CancellationToken cancellationToken = default)
+    {
+        var routingKey = binding.RoutingKey ?? declaration.Name;
+
+        await channel.ExchangeBindAsync(
+            destination: declaration.Name,
+            source: binding.ExchangeDeclaration.Name,
+            routingKey: routingKey,
+            arguments: binding.Arguments,
+            noWait: binding.NoWait,
+            cancellationToken: cancellationToken);
+    }
+
+    /// <summary>
+    /// Unbinds an exchange from another exchange.
+    /// </summary>
+    /// <param name="declaration">The destination exchange declaration.</param>
+    /// <param name="binding">The binding declaration containing source exchange and routing information.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    public async Task ExchangeUnbindAsync(
+        RabbitExchangeDeclaration declaration,
+        RabbitExchangeBindingDeclaration binding,
+        CancellationToken cancellationToken = default)
+    {
+        var routingKey = binding.RoutingKey ?? declaration.Name;
+
+        await channel.ExchangeUnbindAsync(
+            destination: declaration.Name,
+            source: binding.ExchangeDeclaration.Name,
+            routingKey: routingKey,
+            arguments: binding.Arguments,
+            noWait: binding.NoWait,
+            cancellationToken: cancellationToken);
+    }
+
+    /// <summary>
+    /// Deletes an exchange from the RabbitMQ server.
+    /// </summary>
+    /// <param name="declaration">The exchange declaration to delete.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    /// <remarks>
+    /// If UnusedOnly is set in the declaration, attempts to delete only unused exchanges; a refused delete of an
+    /// exchange still in use surfaces as the client's exception, unlike a queue's, which is logged.
+    /// </remarks>
+    public async Task ExchangeDeleteAsync(
+        RabbitExchangeDeclaration declaration,
+        CancellationToken cancellationToken = default)
+    {
+        await channel.ExchangeDeleteAsync(
+            declaration.Name,
+            declaration.UnusedOnly,
+            declaration.NoWait,
+            cancellationToken: cancellationToken);
+    }
+
+    /// <summary>
+    /// Declares a queue on the RabbitMQ server.
+    /// </summary>
+    /// <param name="declaration">The queue declaration containing configuration parameters.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    public async Task QueueDeclareAsync(
+        RabbitQueueDeclaration declaration,
+        CancellationToken cancellationToken = default)
+    {
+        await channel.QueueDeclareAsync(
+            queue: declaration.Name,
+            durable: declaration.Durable,
+            exclusive: declaration.Exclusive,
+            autoDelete: declaration.AutoDelete,
+            arguments: declaration.Arguments,
+            noWait: declaration.NoWait,
+            cancellationToken: cancellationToken);
+    }
+
+    /// <summary>
+    /// Binds a queue to an exchange.
+    /// </summary>
+    /// <param name="declaration">The queue declaration.</param>
+    /// <param name="binding">The binding declaration containing exchange and routing information.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    public async Task QueueBindAsync(
+        RabbitQueueDeclaration declaration,
+        RabbitQueueBindingDeclaration binding,
+        CancellationToken cancellationToken = default)
+    {
+        await channel.QueueBindAsync(
+            queue: declaration.Name,
+            exchange: binding.ExchangeDeclaration.Name,
+            routingKey: binding.RoutingKey ?? declaration.Name,
+            arguments: binding.Arguments,
+            noWait: binding.NoWait,
+            cancellationToken: cancellationToken);
+    }
+
+    /// <summary>
+    /// Unbinds a queue from an exchange.
+    /// </summary>
+    /// <param name="declaration">The queue declaration.</param>
+    /// <param name="binding">The binding declaration containing exchange and routing information.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    public async Task QueueUnbindAsync(
+        RabbitQueueDeclaration declaration,
+        RabbitQueueBindingDeclaration binding,
+        CancellationToken cancellationToken = default)
+    {
+        await channel.QueueUnbindAsync(
+            queue: declaration.Name,
+            exchange: binding.ExchangeDeclaration.Name,
+            routingKey: binding.RoutingKey ?? declaration.Name,
+            arguments: binding.Arguments,
+            cancellationToken: cancellationToken);
+    }
+
+    /// <summary>
+    /// Deletes a queue from the RabbitMQ server.
+    /// </summary>
+    /// <param name="declaration">The queue declaration to delete.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    /// <remarks>
+    /// Handles special cases when UnusedOnly or EmptyOnly flags are set,
+    /// catching and logging expected exceptions when queues can't be deleted.
+    /// RabbitMQ.Client does not ignore PRECONDITION_FAILED: with either flag set it means the queue is still
+    /// used or not empty, so the exception is logged and ignored.
+    /// </remarks>
+    public async Task QueueDeleteAsync(
+        RabbitQueueDeclaration declaration,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await channel.QueueDeleteAsync(
+                declaration.Name,
+                declaration.UnusedOnly,
+                declaration.EmptyOnly,
+                declaration.NoWait,
+                cancellationToken: cancellationToken);
+        }
+        catch (OperationInterruptedException) when (declaration.UnusedOnly || declaration.EmptyOnly)
+        {
+            Log.QueueNotDeleted(logger, declaration.Name);
+        }
+    }
+
+    /// <summary>
+    /// Starts consuming messages from a queue.
+    /// </summary>
+    /// <param name="serviceProvider">The service provider for dependency injection.</param>
+    /// <param name="options">The RabbitMQ options containing serialization configuration.</param>
+    /// <param name="queue">The queue declaration to consume from.</param>
+    /// <param name="declaration">The consumer declaration containing configuration.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    /// <returns>The broker-assigned tags of the started consumers, one per created consumer.</returns>
+    /// <remarks>
+    /// Creates multiple consumers if Count > 1 in the declaration,
+    /// appending index numbers to consumer tags for identification.
+    /// The returned tags feed <see cref="BasicCancelAsync"/> on graceful shutdown.
+    /// </remarks>
+    public async Task<IReadOnlyList<string>> BasicConsumeAsync(
+        IServiceProvider serviceProvider,
+        RabbitOptions options,
+        RabbitQueueDeclaration queue,
+        RabbitConsumerDeclaration declaration,
+        CancellationToken cancellationToken = default)
+    {
+        var consumerTags = new List<string>((int)declaration.Count);
+
+        for (var index = 0; index < declaration.Count; index++)
+        {
+            consumerTags.Add(await channel.BasicConsumeAsync(
+                queue: queue.Name,
+                autoAck: declaration.AutoAck,
+                consumerTag: declaration.Tag is null
+                    ? string.Empty
+                    : $"{declaration.Tag}_{index}",
+                noLocal: declaration.NoLocal,
+                exclusive: declaration.Exclusive,
+                arguments: declaration.Arguments,
+                consumer: new RabbitConsumer(channel, options, serviceProvider, queue, declaration, logger),
+                cancellationToken: cancellationToken));
+        }
+
+        return consumerTags;
+    }
+
+    /// <summary>
+    /// Stops a consumer so no further deliveries arrive on its tag.
+    /// </summary>
+    /// <param name="consumerTag">The broker-assigned tag returned by <see cref="BasicConsumeAsync"/>.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    public async Task BasicCancelAsync(string consumerTag, CancellationToken cancellationToken = default)
+    {
+        await channel.BasicCancelAsync(consumerTag, noWait: false, cancellationToken);
+    }
+
+    /// <summary>
+    /// Configures quality of service (QoS) settings for the channel.
+    /// </summary>
+    /// <param name="declaration">The consumer declaration containing QoS configuration.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    /// <remarks>
+    /// Currently only implements prefetchCount (message-based QoS), not prefetchSize (byte-based QoS).
+    /// </remarks>
+    public async Task BasicQosAsync(
+        RabbitConsumerDeclaration declaration,
+        CancellationToken cancellationToken = default)
+    {
+        await channel.BasicQosAsync(0, declaration.PrefetchCount, declaration.Global, cancellationToken);
+    }
+
+    /// <summary>
+    /// Publishes a message to an exchange.
+    /// </summary>
+    /// <param name="declaration">The producer declaration containing configuration.</param>
+    /// <param name="payload">The serialized message payload.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    public async Task BasicPublishAsync(
+        RabbitProducerDeclaration declaration,
+        byte[] payload,
+        CancellationToken cancellationToken = default)
+    {
+        await PublishAsync(declaration, payload, cancellationToken);
+    }
+
+    /// <summary>
+    /// Publishes a message to an exchange and hands back the client's own task, with no state machine around it.
+    /// </summary>
+    /// <param name="declaration">The producer declaration containing configuration.</param>
+    /// <param name="body">The serialized message payload; the client may read it until the task completes.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The client's task, completing once the broker accepted (or confirmed) the message.</returns>
+    internal ValueTask PublishAsync(
+        RabbitProducerDeclaration declaration,
+        ReadOnlyMemory<byte> body,
+        CancellationToken cancellationToken)
+    {
+        var properties = CreateBasicProperties(declaration);
+
+        return channel.BasicPublishAsync(
+            exchange: declaration.ExchangeDeclaration?.Name ?? string.Empty,
+            routingKey: declaration.RoutingKey ?? string.Empty,
+            mandatory: declaration.Mandatory,
+            basicProperties: properties,
+            body: body,
+            cancellationToken: cancellationToken);
+    }
+
+    /// <summary>
+    /// Publishes a message with properties used again after the publish, and hands back the client's own task.
+    /// </summary>
+    /// <param name="declaration">The producer declaration containing configuration.</param>
+    /// <param name="properties">The properties to fill; disposed by the caller once the task completed.</param>
+    /// <param name="body">The serialized message payload; the client may read it until the task completes.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The client's task, completing once the broker accepted (or confirmed) the message.</returns>
+    internal ValueTask PublishAsync(
+        RabbitProducerDeclaration declaration,
+        PublishProperties properties,
+        ReadOnlyMemory<byte> body,
+        CancellationToken cancellationToken)
+    {
+        var basicProperties = properties.Fill(declaration, TracksConfirmations);
+
+        return channel.BasicPublishAsync(
+            exchange: declaration.ExchangeDeclaration?.Name ?? string.Empty,
+            routingKey: declaration.RoutingKey ?? string.Empty,
+            mandatory: declaration.Mandatory,
+            basicProperties: basicProperties,
+            body: body,
+            cancellationToken: cancellationToken);
+    }
+
+    /// <summary>
+    /// Creates and configures message properties based on the producer declaration.
+    /// </summary>
+    /// <param name="declaration">The producer declaration containing property configurations.</param>
+    /// <returns>A configured BasicProperties instance.</returns>
+    private static BasicProperties CreateBasicProperties(RabbitProducerDeclaration declaration)
+    {
+        var properties = new BasicProperties();
+        var actions = declaration.Properties;
+
+        for (var i = 0; i < actions.Count; i++)
+        {
+            actions[i](properties);
+        }
+
+        return properties;
+    }
+
+    /// <summary>
+    /// Enables transaction mode for the channel.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    public async Task TxSelectAsync(CancellationToken cancellationToken = default)
+    {
+        await channel.TxSelectAsync(cancellationToken);
+    }
+
+    /// <summary>
+    /// Commits the current transaction.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    public async Task TxCommitAsync(CancellationToken cancellationToken = default)
+    {
+        await channel.TxCommitAsync(cancellationToken);
+    }
+
+    /// <summary>
+    /// Rolls back the current transaction.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    public async Task TxRollbackAsync(CancellationToken cancellationToken = default)
+    {
+        await channel.TxRollbackAsync(cancellationToken);
+    }
+
+    /// <summary>
+    /// Disposes the channel and releases all resources.
+    /// </summary>
+    public void Dispose()
+    {
+        channel.Dispose();
+    }
+
+    /// <summary>
+    /// Asynchronously disposes the channel and releases all resources.
+    /// </summary>
+    /// <returns>A task representing the asynchronous dispose operation.</returns>
+    public ValueTask DisposeAsync()
+    {
+        return channel.DisposeAsync();
+    }
+
+    /// <summary>
+    /// Occurs when a callback exception is thrown.
+    /// </summary>
+    public event AsyncEventHandler<CallbackExceptionEventArgs> CallbackExceptionAsync
+    {
+        add => channel.CallbackExceptionAsync += value;
+        remove => channel.CallbackExceptionAsync -= value;
+    }
+
+    /// <summary>
+    /// Occurs when flow control is activated.
+    /// </summary>
+    public event AsyncEventHandler<FlowControlEventArgs> FlowControlAsync
+    {
+        add => channel.FlowControlAsync += value;
+        remove => channel.FlowControlAsync -= value;
+    }
+
+    /// <summary>
+    /// Occurs when the channel is shutdown.
+    /// </summary>
+    public event AsyncEventHandler<ShutdownEventArgs> ChannelShutdownAsync
+    {
+        add => channel.ChannelShutdownAsync += value;
+        remove => channel.ChannelShutdownAsync -= value;
+    }
+}

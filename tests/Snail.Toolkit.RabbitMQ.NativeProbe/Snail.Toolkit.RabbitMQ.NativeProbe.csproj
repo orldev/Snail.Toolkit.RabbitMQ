@@ -1,0 +1,17 @@
+<Project Sdk="Snail.Sdk">
+
+  <!--
+    The library in a native app: IsAotCompatible sees warnings only, and a library can be clean and still publish or
+    consume nothing under Native AOT. The shared CI publishes this probe with Native AOT and runs it; it must exit 0.
+  -->
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Configuration" />
+    <PackageReference Include="Microsoft.Extensions.Logging" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Snail.Toolkit.RabbitMQ.csproj" />
+  </ItemGroup>
+
+</Project>

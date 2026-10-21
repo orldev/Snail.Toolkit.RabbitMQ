@@ -1,0 +1,314 @@
+#nullable enable
+Snail.Toolkit.RabbitMQ.Channels.IRabbitChannelProvider
+Snail.Toolkit.RabbitMQ.Channels.IRabbitChannelProvider.FromDeclaration(Snail.Toolkit.RabbitMQ.Producers.RabbitProducerDeclaration! declaration, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Snail.Toolkit.RabbitMQ.Channels.RabbitChannel!>!
+Snail.Toolkit.RabbitMQ.Channels.RabbitChannel
+Snail.Toolkit.RabbitMQ.Channels.RabbitChannel.BasicCancelAsync(string! consumerTag, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
+Snail.Toolkit.RabbitMQ.Channels.RabbitChannel.BasicConsumeAsync(System.IServiceProvider! serviceProvider, Snail.Toolkit.RabbitMQ.RabbitOptions! options, Snail.Toolkit.RabbitMQ.Queues.RabbitQueueDeclaration! queue, Snail.Toolkit.RabbitMQ.Consumers.RabbitConsumerDeclaration! declaration, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<string!>!>!
+Snail.Toolkit.RabbitMQ.Channels.RabbitChannel.BasicPublishAsync(Snail.Toolkit.RabbitMQ.Producers.RabbitProducerDeclaration! declaration, byte[]! payload, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
+Snail.Toolkit.RabbitMQ.Channels.RabbitChannel.BasicQosAsync(Snail.Toolkit.RabbitMQ.Consumers.RabbitConsumerDeclaration! declaration, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
+Snail.Toolkit.RabbitMQ.Channels.RabbitChannel.CallbackExceptionAsync -> RabbitMQ.Client.Events.AsyncEventHandler<RabbitMQ.Client.Events.CallbackExceptionEventArgs!>!
+Snail.Toolkit.RabbitMQ.Channels.RabbitChannel.ChannelNumber.get -> int
+Snail.Toolkit.RabbitMQ.Channels.RabbitChannel.ChannelShutdownAsync -> RabbitMQ.Client.Events.AsyncEventHandler<RabbitMQ.Client.Events.ShutdownEventArgs!>!
+Snail.Toolkit.RabbitMQ.Channels.RabbitChannel.ConnectionDeclaration.get -> Snail.Toolkit.RabbitMQ.Connections.RabbitConnectionDeclaration!
+Snail.Toolkit.RabbitMQ.Channels.RabbitChannel.Dispose() -> void
+Snail.Toolkit.RabbitMQ.Channels.RabbitChannel.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Snail.Toolkit.RabbitMQ.Channels.RabbitChannel.ExchangeBindAsync(Snail.Toolkit.RabbitMQ.Exchanges.RabbitExchangeDeclaration! declaration, Snail.Toolkit.RabbitMQ.Exchanges.RabbitExchangeBindingDeclaration! binding, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
+Snail.Toolkit.RabbitMQ.Channels.RabbitChannel.ExchangeDeclareAsync(Snail.Toolkit.RabbitMQ.Exchanges.RabbitExchangeDeclaration! declaration, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
+Snail.Toolkit.RabbitMQ.Channels.RabbitChannel.ExchangeDeleteAsync(Snail.Toolkit.RabbitMQ.Exchanges.RabbitExchangeDeclaration! declaration, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
+Snail.Toolkit.RabbitMQ.Channels.RabbitChannel.ExchangeUnbindAsync(Snail.Toolkit.RabbitMQ.Exchanges.RabbitExchangeDeclaration! declaration, Snail.Toolkit.RabbitMQ.Exchanges.RabbitExchangeBindingDeclaration! binding, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
+Snail.Toolkit.RabbitMQ.Channels.RabbitChannel.FlowControlAsync -> RabbitMQ.Client.Events.AsyncEventHandler<RabbitMQ.Client.Events.FlowControlEventArgs!>!
+Snail.Toolkit.RabbitMQ.Channels.RabbitChannel.IsOpen.get -> bool
+Snail.Toolkit.RabbitMQ.Channels.RabbitChannel.QueueBindAsync(Snail.Toolkit.RabbitMQ.Queues.RabbitQueueDeclaration! declaration, Snail.Toolkit.RabbitMQ.Queues.RabbitQueueBindingDeclaration! binding, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
+Snail.Toolkit.RabbitMQ.Channels.RabbitChannel.QueueDeclareAsync(Snail.Toolkit.RabbitMQ.Queues.RabbitQueueDeclaration! declaration, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
+Snail.Toolkit.RabbitMQ.Channels.RabbitChannel.QueueDeleteAsync(Snail.Toolkit.RabbitMQ.Queues.RabbitQueueDeclaration! declaration, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
+Snail.Toolkit.RabbitMQ.Channels.RabbitChannel.QueueUnbindAsync(Snail.Toolkit.RabbitMQ.Queues.RabbitQueueDeclaration! declaration, Snail.Toolkit.RabbitMQ.Queues.RabbitQueueBindingDeclaration! binding, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
+Snail.Toolkit.RabbitMQ.Channels.RabbitChannel.RabbitChannel(Snail.Toolkit.RabbitMQ.Connections.RabbitConnectionDeclaration! connectionDeclaration, RabbitMQ.Client.IChannel! channel, Microsoft.Extensions.Logging.ILogger<Snail.Toolkit.RabbitMQ.Channels.RabbitChannel!>! logger) -> void
+Snail.Toolkit.RabbitMQ.Channels.RabbitChannel.TxCommitAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
+Snail.Toolkit.RabbitMQ.Channels.RabbitChannel.TxRollbackAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
+Snail.Toolkit.RabbitMQ.Channels.RabbitChannel.TxSelectAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
+Snail.Toolkit.RabbitMQ.Connections.IRabbitConnectionBuilder
+Snail.Toolkit.RabbitMQ.Connections.IRabbitConnectionBuilder.ConnectionDeclaration.get -> Snail.Toolkit.RabbitMQ.Connections.RabbitConnectionDeclaration!
+Snail.Toolkit.RabbitMQ.Connections.IRabbitConnectionBuilder.Services.get -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+Snail.Toolkit.RabbitMQ.Connections.IRabbitConnectionProvider
+Snail.Toolkit.RabbitMQ.Connections.IRabbitConnectionProvider.FromDeclaration(Snail.Toolkit.RabbitMQ.Connections.RabbitConnectionDeclaration! connection, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Snail.Toolkit.RabbitMQ.Connections.RabbitConnection!>!
+Snail.Toolkit.RabbitMQ.Connections.RabbitConnection
+Snail.Toolkit.RabbitMQ.Connections.RabbitConnection.CallbackExceptionAsync -> RabbitMQ.Client.Events.AsyncEventHandler<RabbitMQ.Client.Events.CallbackExceptionEventArgs!>!
+Snail.Toolkit.RabbitMQ.Connections.RabbitConnection.ClientProvidedName.get -> string!
+Snail.Toolkit.RabbitMQ.Connections.RabbitConnection.ConnectionBlockedAsync -> RabbitMQ.Client.Events.AsyncEventHandler<RabbitMQ.Client.Events.ConnectionBlockedEventArgs!>!
+Snail.Toolkit.RabbitMQ.Connections.RabbitConnection.ConnectionDeclaration.get -> Snail.Toolkit.RabbitMQ.Connections.RabbitConnectionDeclaration!
+Snail.Toolkit.RabbitMQ.Connections.RabbitConnection.ConnectionRecoveryErrorAsync -> RabbitMQ.Client.Events.AsyncEventHandler<RabbitMQ.Client.Events.ConnectionRecoveryErrorEventArgs!>!
+Snail.Toolkit.RabbitMQ.Connections.RabbitConnection.ConnectionShutdownAsync -> RabbitMQ.Client.Events.AsyncEventHandler<RabbitMQ.Client.Events.ShutdownEventArgs!>!
+Snail.Toolkit.RabbitMQ.Connections.RabbitConnection.ConnectionUnblockedAsync -> RabbitMQ.Client.Events.AsyncEventHandler<RabbitMQ.Client.Events.AsyncEventArgs!>!
+Snail.Toolkit.RabbitMQ.Connections.RabbitConnection.CreateChannelAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Snail.Toolkit.RabbitMQ.Channels.RabbitChannel!>!
+Snail.Toolkit.RabbitMQ.Connections.RabbitConnection.CreateChannelAsync(bool publisherConfirmations, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Snail.Toolkit.RabbitMQ.Channels.RabbitChannel!>!
+Snail.Toolkit.RabbitMQ.Connections.RabbitConnection.Dispose() -> void
+Snail.Toolkit.RabbitMQ.Connections.RabbitConnection.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Snail.Toolkit.RabbitMQ.Connections.RabbitConnection.RabbitConnection(Microsoft.Extensions.Logging.ILogger<Snail.Toolkit.RabbitMQ.Channels.RabbitChannel!>! logger, Snail.Toolkit.RabbitMQ.Connections.RabbitConnectionDeclaration! connectionDeclaration, RabbitMQ.Client.IConnection! connection) -> void
+Snail.Toolkit.RabbitMQ.Connections.RabbitConnection.RecoverySucceededAsync -> RabbitMQ.Client.Events.AsyncEventHandler<RabbitMQ.Client.Events.AsyncEventArgs!>!
+Snail.Toolkit.RabbitMQ.Connections.RabbitConnectionDeclaration
+Snail.Toolkit.RabbitMQ.Connections.RabbitConnectionDeclaration.Name.get -> string!
+Snail.Toolkit.RabbitMQ.Connections.RabbitConnectionDeclaration.RabbitConnectionDeclaration(string! name) -> void
+Snail.Toolkit.RabbitMQ.Consumers.Extensions.RabbitConnectionBuilderExtensions
+Snail.Toolkit.RabbitMQ.Consumers.Extensions.RabbitConsumerBuilderExtensions
+Snail.Toolkit.RabbitMQ.Consumers.IConsumer<T>
+Snail.Toolkit.RabbitMQ.Consumers.IConsumer<T>.HandleAsync(T message, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask
+Snail.Toolkit.RabbitMQ.Consumers.IRabbitConsumerBuilder<T>
+Snail.Toolkit.RabbitMQ.Consumers.IRabbitConsumerBuilder<T>.ConsumerDeclaration.get -> Snail.Toolkit.RabbitMQ.Consumers.RabbitConsumerDeclaration!
+Snail.Toolkit.RabbitMQ.Consumers.IRabbitConsumerBuilder<T>.Services.get -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+Snail.Toolkit.RabbitMQ.Consumers.RabbitConsumerDeclaration
+Snail.Toolkit.RabbitMQ.Consumers.RabbitConsumerDeclaration.Arguments.get -> System.Collections.Generic.IDictionary<string!, object?>!
+Snail.Toolkit.RabbitMQ.Consumers.RabbitConsumerDeclaration.AutoAck.get -> bool
+Snail.Toolkit.RabbitMQ.Consumers.RabbitConsumerDeclaration.AutoAck.set -> void
+Snail.Toolkit.RabbitMQ.Consumers.RabbitConsumerDeclaration.ConnectionDeclaration.get -> Snail.Toolkit.RabbitMQ.Connections.RabbitConnectionDeclaration!
+Snail.Toolkit.RabbitMQ.Consumers.RabbitConsumerDeclaration.Count.get -> uint
+Snail.Toolkit.RabbitMQ.Consumers.RabbitConsumerDeclaration.Count.set -> void
+Snail.Toolkit.RabbitMQ.Consumers.RabbitConsumerDeclaration.Exclusive.get -> bool
+Snail.Toolkit.RabbitMQ.Consumers.RabbitConsumerDeclaration.Exclusive.set -> void
+Snail.Toolkit.RabbitMQ.Consumers.RabbitConsumerDeclaration.Global.get -> bool
+Snail.Toolkit.RabbitMQ.Consumers.RabbitConsumerDeclaration.Global.set -> void
+Snail.Toolkit.RabbitMQ.Consumers.RabbitConsumerDeclaration.NoLocal.get -> bool
+Snail.Toolkit.RabbitMQ.Consumers.RabbitConsumerDeclaration.NoLocal.set -> void
+Snail.Toolkit.RabbitMQ.Consumers.RabbitConsumerDeclaration.PayloadType.get -> System.Type!
+Snail.Toolkit.RabbitMQ.Consumers.RabbitConsumerDeclaration.PrefetchCount.get -> ushort
+Snail.Toolkit.RabbitMQ.Consumers.RabbitConsumerDeclaration.PrefetchCount.set -> void
+Snail.Toolkit.RabbitMQ.Consumers.RabbitConsumerDeclaration.QueueDeclarations.get -> Snail.Toolkit.RabbitMQ.Queues.RabbitQueueDeclaration![]!
+Snail.Toolkit.RabbitMQ.Consumers.RabbitConsumerDeclaration.RabbitConsumerDeclaration(System.Type! payloadType, Snail.Toolkit.RabbitMQ.Connections.RabbitConnectionDeclaration! connectionDeclaration, Snail.Toolkit.RabbitMQ.Queues.RabbitQueueDeclaration![]! queueDeclarations) -> void
+Snail.Toolkit.RabbitMQ.Consumers.RabbitConsumerDeclaration.Requeue.get -> bool
+Snail.Toolkit.RabbitMQ.Consumers.RabbitConsumerDeclaration.Requeue.set -> void
+Snail.Toolkit.RabbitMQ.Consumers.RabbitConsumerDeclaration.Subscriptions.get -> System.Collections.Generic.IList<System.Func<Microsoft.Extensions.DependencyInjection.IServiceScope!, object!, System.Threading.CancellationToken, System.Threading.Tasks.ValueTask>!>!
+Snail.Toolkit.RabbitMQ.Consumers.RabbitConsumerDeclaration.Tag.get -> string?
+Snail.Toolkit.RabbitMQ.Consumers.RabbitConsumerDeclaration.Tag.set -> void
+Snail.Toolkit.RabbitMQ.Exchanges.Extensions.RabbitConnectionBuilderExtensions
+Snail.Toolkit.RabbitMQ.Exchanges.Extensions.RabbitExchangeBindingBuilderExtensions
+Snail.Toolkit.RabbitMQ.Exchanges.Extensions.RabbitExchangeBuilderExtensions
+Snail.Toolkit.RabbitMQ.Exchanges.IRabbitExchangeBindingBuilder
+Snail.Toolkit.RabbitMQ.Exchanges.IRabbitExchangeBindingBuilder.Declaration.get -> Snail.Toolkit.RabbitMQ.Exchanges.RabbitExchangeBindingDeclaration!
+Snail.Toolkit.RabbitMQ.Exchanges.IRabbitExchangeBuilder
+Snail.Toolkit.RabbitMQ.Exchanges.IRabbitExchangeBuilder<T>
+Snail.Toolkit.RabbitMQ.Exchanges.IRabbitExchangeBuilderCore
+Snail.Toolkit.RabbitMQ.Exchanges.IRabbitExchangeBuilderCore.ExchangeDeclaration.get -> Snail.Toolkit.RabbitMQ.Exchanges.RabbitExchangeDeclaration!
+Snail.Toolkit.RabbitMQ.Exchanges.RabbitExchangeBindingDeclaration
+Snail.Toolkit.RabbitMQ.Exchanges.RabbitExchangeBindingDeclaration.Arguments.get -> System.Collections.Generic.IDictionary<string!, object?>!
+Snail.Toolkit.RabbitMQ.Exchanges.RabbitExchangeBindingDeclaration.Deleted.get -> bool
+Snail.Toolkit.RabbitMQ.Exchanges.RabbitExchangeBindingDeclaration.Deleted.set -> void
+Snail.Toolkit.RabbitMQ.Exchanges.RabbitExchangeBindingDeclaration.ExchangeDeclaration.get -> Snail.Toolkit.RabbitMQ.Exchanges.RabbitExchangeDeclaration!
+Snail.Toolkit.RabbitMQ.Exchanges.RabbitExchangeBindingDeclaration.NoWait.get -> bool
+Snail.Toolkit.RabbitMQ.Exchanges.RabbitExchangeBindingDeclaration.NoWait.set -> void
+Snail.Toolkit.RabbitMQ.Exchanges.RabbitExchangeBindingDeclaration.RabbitExchangeBindingDeclaration(Snail.Toolkit.RabbitMQ.Exchanges.RabbitExchangeDeclaration! exchangeDeclaration) -> void
+Snail.Toolkit.RabbitMQ.Exchanges.RabbitExchangeBindingDeclaration.RoutingKey.get -> string?
+Snail.Toolkit.RabbitMQ.Exchanges.RabbitExchangeBindingDeclaration.RoutingKey.set -> void
+Snail.Toolkit.RabbitMQ.Exchanges.RabbitExchangeDeclaration
+Snail.Toolkit.RabbitMQ.Exchanges.RabbitExchangeDeclaration.Arguments.get -> System.Collections.Generic.IDictionary<string!, object?>!
+Snail.Toolkit.RabbitMQ.Exchanges.RabbitExchangeDeclaration.AutoDelete.get -> bool
+Snail.Toolkit.RabbitMQ.Exchanges.RabbitExchangeDeclaration.AutoDelete.set -> void
+Snail.Toolkit.RabbitMQ.Exchanges.RabbitExchangeDeclaration.BindingDeclarations.get -> System.Collections.Generic.IList<Snail.Toolkit.RabbitMQ.Exchanges.RabbitExchangeBindingDeclaration!>!
+Snail.Toolkit.RabbitMQ.Exchanges.RabbitExchangeDeclaration.ConnectionDeclaration.get -> Snail.Toolkit.RabbitMQ.Connections.RabbitConnectionDeclaration!
+Snail.Toolkit.RabbitMQ.Exchanges.RabbitExchangeDeclaration.Deleted.get -> bool
+Snail.Toolkit.RabbitMQ.Exchanges.RabbitExchangeDeclaration.Deleted.set -> void
+Snail.Toolkit.RabbitMQ.Exchanges.RabbitExchangeDeclaration.Durable.get -> bool
+Snail.Toolkit.RabbitMQ.Exchanges.RabbitExchangeDeclaration.Durable.set -> void
+Snail.Toolkit.RabbitMQ.Exchanges.RabbitExchangeDeclaration.Name.get -> string!
+Snail.Toolkit.RabbitMQ.Exchanges.RabbitExchangeDeclaration.NoWait.get -> bool
+Snail.Toolkit.RabbitMQ.Exchanges.RabbitExchangeDeclaration.NoWait.set -> void
+Snail.Toolkit.RabbitMQ.Exchanges.RabbitExchangeDeclaration.RabbitExchangeDeclaration(Snail.Toolkit.RabbitMQ.Connections.RabbitConnectionDeclaration! connectionDeclaration, string! type, string! name) -> void
+Snail.Toolkit.RabbitMQ.Exchanges.RabbitExchangeDeclaration.Type.get -> string!
+Snail.Toolkit.RabbitMQ.Exchanges.RabbitExchangeDeclaration.UnusedOnly.get -> bool
+Snail.Toolkit.RabbitMQ.Exchanges.RabbitExchangeDeclaration.UnusedOnly.set -> void
+Snail.Toolkit.RabbitMQ.Extensions.RabbitBuilderExtensions
+Snail.Toolkit.RabbitMQ.Extensions.RabbitOptionsExtensions
+Snail.Toolkit.RabbitMQ.Extensions.ServiceCollectionExtensions
+Snail.Toolkit.RabbitMQ.IRabbitBuilder
+Snail.Toolkit.RabbitMQ.IRabbitBuilder.Services.get -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+Snail.Toolkit.RabbitMQ.Producers.Extensions.RabbitConnectionBuilderExtensions
+Snail.Toolkit.RabbitMQ.Producers.Extensions.RabbitProducerBuilderExtensions
+Snail.Toolkit.RabbitMQ.Producers.IRabbitProducer
+Snail.Toolkit.RabbitMQ.Producers.IRabbitProducer.PublishAsync<T>(T payload, System.Action<Snail.Toolkit.RabbitMQ.Producers.IRabbitProducerBuilder<T>!>? overrides = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask
+Snail.Toolkit.RabbitMQ.Producers.IRabbitProducerBuilder<T>
+Snail.Toolkit.RabbitMQ.Producers.IRabbitProducerBuilder<T>.ProducerDeclaration.get -> Snail.Toolkit.RabbitMQ.Producers.RabbitProducerDeclaration!
+Snail.Toolkit.RabbitMQ.Producers.RabbitProducerDeclaration
+Snail.Toolkit.RabbitMQ.Producers.RabbitProducerDeclaration.ConnectionDeclaration.get -> Snail.Toolkit.RabbitMQ.Connections.RabbitConnectionDeclaration!
+Snail.Toolkit.RabbitMQ.Producers.RabbitProducerDeclaration.ExchangeDeclaration.get -> Snail.Toolkit.RabbitMQ.Exchanges.RabbitExchangeDeclaration?
+Snail.Toolkit.RabbitMQ.Producers.RabbitProducerDeclaration.Mandatory.get -> bool
+Snail.Toolkit.RabbitMQ.Producers.RabbitProducerDeclaration.Mandatory.set -> void
+Snail.Toolkit.RabbitMQ.Producers.RabbitProducerDeclaration.PayloadType.get -> System.Type!
+Snail.Toolkit.RabbitMQ.Producers.RabbitProducerDeclaration.Properties.get -> System.Collections.Generic.IList<System.Action<RabbitMQ.Client.IBasicProperties!>!>!
+Snail.Toolkit.RabbitMQ.Producers.RabbitProducerDeclaration.Properties.set -> void
+Snail.Toolkit.RabbitMQ.Producers.RabbitProducerDeclaration.RabbitProducerDeclaration(System.Type! payloadType, Snail.Toolkit.RabbitMQ.Connections.RabbitConnectionDeclaration! connectionDeclaration, Snail.Toolkit.RabbitMQ.Exchanges.RabbitExchangeDeclaration? exchangeDeclaration = null) -> void
+Snail.Toolkit.RabbitMQ.Producers.RabbitProducerDeclaration.RoutingKey.get -> string?
+Snail.Toolkit.RabbitMQ.Producers.RabbitProducerDeclaration.RoutingKey.set -> void
+Snail.Toolkit.RabbitMQ.Producers.RabbitProducerDeclaration.Transactional.get -> bool
+Snail.Toolkit.RabbitMQ.Producers.RabbitProducerDeclaration.Transactional.set -> void
+Snail.Toolkit.RabbitMQ.Queues.Extensions.RabbitConnectionBuilderExtensions
+Snail.Toolkit.RabbitMQ.Queues.Extensions.RabbitQueueBindingBuilderExtensions
+Snail.Toolkit.RabbitMQ.Queues.Extensions.RabbitQueueBuilderExtensions
+Snail.Toolkit.RabbitMQ.Queues.IRabbitQueueBindingBuilder
+Snail.Toolkit.RabbitMQ.Queues.IRabbitQueueBindingBuilder.Declaration.get -> Snail.Toolkit.RabbitMQ.Queues.RabbitQueueBindingDeclaration!
+Snail.Toolkit.RabbitMQ.Queues.IRabbitQueueBuilder<T>
+Snail.Toolkit.RabbitMQ.Queues.IRabbitQueueBuilder<T>.Declaration.get -> Snail.Toolkit.RabbitMQ.Queues.RabbitQueueDeclaration!
+Snail.Toolkit.RabbitMQ.Queues.RabbitQueueBindingDeclaration
+Snail.Toolkit.RabbitMQ.Queues.RabbitQueueBindingDeclaration.Arguments.get -> System.Collections.Generic.IDictionary<string!, object?>!
+Snail.Toolkit.RabbitMQ.Queues.RabbitQueueBindingDeclaration.Deleted.get -> bool
+Snail.Toolkit.RabbitMQ.Queues.RabbitQueueBindingDeclaration.Deleted.set -> void
+Snail.Toolkit.RabbitMQ.Queues.RabbitQueueBindingDeclaration.ExchangeDeclaration.get -> Snail.Toolkit.RabbitMQ.Exchanges.RabbitExchangeDeclaration!
+Snail.Toolkit.RabbitMQ.Queues.RabbitQueueBindingDeclaration.NoWait.get -> bool
+Snail.Toolkit.RabbitMQ.Queues.RabbitQueueBindingDeclaration.NoWait.set -> void
+Snail.Toolkit.RabbitMQ.Queues.RabbitQueueBindingDeclaration.RabbitQueueBindingDeclaration(Snail.Toolkit.RabbitMQ.Exchanges.RabbitExchangeDeclaration! exchangeDeclaration) -> void
+Snail.Toolkit.RabbitMQ.Queues.RabbitQueueBindingDeclaration.RoutingKey.get -> string?
+Snail.Toolkit.RabbitMQ.Queues.RabbitQueueBindingDeclaration.RoutingKey.set -> void
+Snail.Toolkit.RabbitMQ.Queues.RabbitQueueDeclaration
+Snail.Toolkit.RabbitMQ.Queues.RabbitQueueDeclaration.Arguments.get -> System.Collections.Generic.IDictionary<string!, object?>!
+Snail.Toolkit.RabbitMQ.Queues.RabbitQueueDeclaration.AutoDelete.get -> bool
+Snail.Toolkit.RabbitMQ.Queues.RabbitQueueDeclaration.AutoDelete.set -> void
+Snail.Toolkit.RabbitMQ.Queues.RabbitQueueDeclaration.BindingDeclarations.get -> System.Collections.Generic.IList<Snail.Toolkit.RabbitMQ.Queues.RabbitQueueBindingDeclaration!>!
+Snail.Toolkit.RabbitMQ.Queues.RabbitQueueDeclaration.ConnectionDeclaration.get -> Snail.Toolkit.RabbitMQ.Connections.RabbitConnectionDeclaration!
+Snail.Toolkit.RabbitMQ.Queues.RabbitQueueDeclaration.Deleted.get -> bool
+Snail.Toolkit.RabbitMQ.Queues.RabbitQueueDeclaration.Deleted.set -> void
+Snail.Toolkit.RabbitMQ.Queues.RabbitQueueDeclaration.Durable.get -> bool
+Snail.Toolkit.RabbitMQ.Queues.RabbitQueueDeclaration.Durable.set -> void
+Snail.Toolkit.RabbitMQ.Queues.RabbitQueueDeclaration.EmptyOnly.get -> bool
+Snail.Toolkit.RabbitMQ.Queues.RabbitQueueDeclaration.EmptyOnly.set -> void
+Snail.Toolkit.RabbitMQ.Queues.RabbitQueueDeclaration.Exclusive.get -> bool
+Snail.Toolkit.RabbitMQ.Queues.RabbitQueueDeclaration.Exclusive.set -> void
+Snail.Toolkit.RabbitMQ.Queues.RabbitQueueDeclaration.MaxAttempts.get -> int
+Snail.Toolkit.RabbitMQ.Queues.RabbitQueueDeclaration.Name.get -> string!
+Snail.Toolkit.RabbitMQ.Queues.RabbitQueueDeclaration.NoWait.get -> bool
+Snail.Toolkit.RabbitMQ.Queues.RabbitQueueDeclaration.NoWait.set -> void
+Snail.Toolkit.RabbitMQ.Queues.RabbitQueueDeclaration.ParkingQueue.get -> Snail.Toolkit.RabbitMQ.Queues.RabbitQueueDeclaration?
+Snail.Toolkit.RabbitMQ.Queues.RabbitQueueDeclaration.RabbitQueueDeclaration(Snail.Toolkit.RabbitMQ.Connections.RabbitConnectionDeclaration! connectionDeclaration, string! name) -> void
+Snail.Toolkit.RabbitMQ.Queues.RabbitQueueDeclaration.RetryQueue.get -> Snail.Toolkit.RabbitMQ.Queues.RabbitQueueDeclaration?
+Snail.Toolkit.RabbitMQ.Queues.RabbitQueueDeclaration.UnusedOnly.get -> bool
+Snail.Toolkit.RabbitMQ.Queues.RabbitQueueDeclaration.UnusedOnly.set -> void
+Snail.Toolkit.RabbitMQ.RabbitClientOptions
+Snail.Toolkit.RabbitMQ.RabbitClientOptions.ClientProvidedName.get -> string!
+Snail.Toolkit.RabbitMQ.RabbitClientOptions.ClientProvidedName.set -> void
+Snail.Toolkit.RabbitMQ.RabbitClientOptions.HostName.get -> string!
+Snail.Toolkit.RabbitMQ.RabbitClientOptions.HostName.set -> void
+Snail.Toolkit.RabbitMQ.RabbitClientOptions.Password.get -> string!
+Snail.Toolkit.RabbitMQ.RabbitClientOptions.Password.set -> void
+Snail.Toolkit.RabbitMQ.RabbitClientOptions.Port.get -> int
+Snail.Toolkit.RabbitMQ.RabbitClientOptions.Port.set -> void
+Snail.Toolkit.RabbitMQ.RabbitClientOptions.RabbitClientOptions() -> void
+Snail.Toolkit.RabbitMQ.RabbitClientOptions.Ssl.get -> Snail.Toolkit.RabbitMQ.RabbitClientSslOptions!
+Snail.Toolkit.RabbitMQ.RabbitClientOptions.Ssl.set -> void
+Snail.Toolkit.RabbitMQ.RabbitClientOptions.UserName.get -> string!
+Snail.Toolkit.RabbitMQ.RabbitClientOptions.UserName.set -> void
+Snail.Toolkit.RabbitMQ.RabbitClientOptions.VirtualHost.get -> string!
+Snail.Toolkit.RabbitMQ.RabbitClientOptions.VirtualHost.set -> void
+Snail.Toolkit.RabbitMQ.RabbitClientSslOptions
+Snail.Toolkit.RabbitMQ.RabbitClientSslOptions.CertPassphrase.get -> string?
+Snail.Toolkit.RabbitMQ.RabbitClientSslOptions.CertPassphrase.set -> void
+Snail.Toolkit.RabbitMQ.RabbitClientSslOptions.CertPath.get -> string?
+Snail.Toolkit.RabbitMQ.RabbitClientSslOptions.CertPath.set -> void
+Snail.Toolkit.RabbitMQ.RabbitClientSslOptions.Enabled.get -> bool
+Snail.Toolkit.RabbitMQ.RabbitClientSslOptions.Enabled.set -> void
+Snail.Toolkit.RabbitMQ.RabbitClientSslOptions.RabbitClientSslOptions() -> void
+Snail.Toolkit.RabbitMQ.RabbitClientSslOptions.ServerName.get -> string?
+Snail.Toolkit.RabbitMQ.RabbitClientSslOptions.ServerName.set -> void
+Snail.Toolkit.RabbitMQ.RabbitMissingDeclarationException
+Snail.Toolkit.RabbitMQ.RabbitMissingDeclarationException.PayloadType.get -> System.Type!
+Snail.Toolkit.RabbitMQ.RabbitMissingDeclarationException.RabbitMissingDeclarationException(System.Type! payloadType) -> void
+Snail.Toolkit.RabbitMQ.RabbitOptions
+Snail.Toolkit.RabbitMQ.RabbitOptions.RabbitOptions() -> void
+Snail.Toolkit.RabbitMQ.RabbitTracing
+Snail.Toolkit.RabbitMQ.RabbitTracing.Settlement
+const Snail.Toolkit.RabbitMQ.Consumers.RabbitConsumerDeclaration.DefaultPrefetchCount = 10 -> ushort
+const Snail.Toolkit.RabbitMQ.RabbitTracing.AttemptTag = "snail.messaging.attempt" -> string!
+const Snail.Toolkit.RabbitMQ.RabbitTracing.PoisonTag = "snail.messaging.poison" -> string!
+const Snail.Toolkit.RabbitMQ.RabbitTracing.Settlement.Acked = "acked" -> string!
+const Snail.Toolkit.RabbitMQ.RabbitTracing.Settlement.Dropped = "dropped" -> string!
+const Snail.Toolkit.RabbitMQ.RabbitTracing.Settlement.Lost = "lost" -> string!
+const Snail.Toolkit.RabbitMQ.RabbitTracing.Settlement.Parked = "parked" -> string!
+const Snail.Toolkit.RabbitMQ.RabbitTracing.Settlement.Rejected = "rejected" -> string!
+const Snail.Toolkit.RabbitMQ.RabbitTracing.Settlement.Requeued = "requeued" -> string!
+const Snail.Toolkit.RabbitMQ.RabbitTracing.Settlement.RetryScheduled = "retry_scheduled" -> string!
+const Snail.Toolkit.RabbitMQ.RabbitTracing.SettlementTag = "snail.messaging.settlement" -> string!
+static Snail.Toolkit.RabbitMQ.Consumers.Extensions.RabbitConnectionBuilderExtensions.AddConsumer<T>(this Snail.Toolkit.RabbitMQ.Connections.IRabbitConnectionBuilder! connection, params Snail.Toolkit.RabbitMQ.Queues.IRabbitQueueBuilder<T>![]! queues) -> Snail.Toolkit.RabbitMQ.Consumers.IRabbitConsumerBuilder<T>!
+static Snail.Toolkit.RabbitMQ.Consumers.Extensions.RabbitConsumerBuilderExtensions.Argument<T>(this Snail.Toolkit.RabbitMQ.Consumers.IRabbitConsumerBuilder<T>! builder, string! argument, object! value) -> Snail.Toolkit.RabbitMQ.Consumers.IRabbitConsumerBuilder<T>!
+static Snail.Toolkit.RabbitMQ.Consumers.Extensions.RabbitConsumerBuilderExtensions.AutoAck<T>(this Snail.Toolkit.RabbitMQ.Consumers.IRabbitConsumerBuilder<T>! builder) -> Snail.Toolkit.RabbitMQ.Consumers.IRabbitConsumerBuilder<T>!
+static Snail.Toolkit.RabbitMQ.Consumers.Extensions.RabbitConsumerBuilderExtensions.Count<T>(this Snail.Toolkit.RabbitMQ.Consumers.IRabbitConsumerBuilder<T>! builder, uint count) -> Snail.Toolkit.RabbitMQ.Consumers.IRabbitConsumerBuilder<T>!
+static Snail.Toolkit.RabbitMQ.Consumers.Extensions.RabbitConsumerBuilderExtensions.Exclusive<T>(this Snail.Toolkit.RabbitMQ.Consumers.IRabbitConsumerBuilder<T>! builder) -> Snail.Toolkit.RabbitMQ.Consumers.IRabbitConsumerBuilder<T>!
+static Snail.Toolkit.RabbitMQ.Consumers.Extensions.RabbitConsumerBuilderExtensions.NoLocal<T>(this Snail.Toolkit.RabbitMQ.Consumers.IRabbitConsumerBuilder<T>! builder) -> Snail.Toolkit.RabbitMQ.Consumers.IRabbitConsumerBuilder<T>!
+static Snail.Toolkit.RabbitMQ.Consumers.Extensions.RabbitConsumerBuilderExtensions.Prefetch<T>(this Snail.Toolkit.RabbitMQ.Consumers.IRabbitConsumerBuilder<T>! builder, ushort prefetchCount, bool global = false) -> Snail.Toolkit.RabbitMQ.Consumers.IRabbitConsumerBuilder<T>!
+static Snail.Toolkit.RabbitMQ.Consumers.Extensions.RabbitConsumerBuilderExtensions.Priority<T>(this Snail.Toolkit.RabbitMQ.Consumers.IRabbitConsumerBuilder<T>! builder, byte priority) -> Snail.Toolkit.RabbitMQ.Consumers.IRabbitConsumerBuilder<T>!
+static Snail.Toolkit.RabbitMQ.Consumers.Extensions.RabbitConsumerBuilderExtensions.Requeue<T>(this Snail.Toolkit.RabbitMQ.Consumers.IRabbitConsumerBuilder<T>! builder) -> Snail.Toolkit.RabbitMQ.Consumers.IRabbitConsumerBuilder<T>!
+static Snail.Toolkit.RabbitMQ.Consumers.Extensions.RabbitConsumerBuilderExtensions.Subscribe<T, TConsumer>(this Snail.Toolkit.RabbitMQ.Consumers.IRabbitConsumerBuilder<T>! builder) -> Snail.Toolkit.RabbitMQ.Consumers.IRabbitConsumerBuilder<T>!
+static Snail.Toolkit.RabbitMQ.Consumers.Extensions.RabbitConsumerBuilderExtensions.Subscribe<T>(this Snail.Toolkit.RabbitMQ.Consumers.IRabbitConsumerBuilder<T>! builder, System.Func<Microsoft.Extensions.DependencyInjection.IServiceScope!, T, System.Threading.CancellationToken, System.Threading.Tasks.ValueTask>! subscription) -> Snail.Toolkit.RabbitMQ.Consumers.IRabbitConsumerBuilder<T>!
+static Snail.Toolkit.RabbitMQ.Consumers.Extensions.RabbitConsumerBuilderExtensions.Subscribe<T>(this Snail.Toolkit.RabbitMQ.Consumers.IRabbitConsumerBuilder<T>! builder, System.Func<Microsoft.Extensions.DependencyInjection.IServiceScope!, T, System.Threading.Tasks.ValueTask>! subscription) -> Snail.Toolkit.RabbitMQ.Consumers.IRabbitConsumerBuilder<T>!
+static Snail.Toolkit.RabbitMQ.Consumers.Extensions.RabbitConsumerBuilderExtensions.Subscribe<T>(this Snail.Toolkit.RabbitMQ.Consumers.IRabbitConsumerBuilder<T>! builder, System.Func<T, System.Threading.Tasks.ValueTask>! subscription) -> Snail.Toolkit.RabbitMQ.Consumers.IRabbitConsumerBuilder<T>!
+static Snail.Toolkit.RabbitMQ.Consumers.Extensions.RabbitConsumerBuilderExtensions.Tagged<T>(this Snail.Toolkit.RabbitMQ.Consumers.IRabbitConsumerBuilder<T>! builder, string! tag) -> Snail.Toolkit.RabbitMQ.Consumers.IRabbitConsumerBuilder<T>!
+static Snail.Toolkit.RabbitMQ.Exchanges.Extensions.RabbitConnectionBuilderExtensions.AddDirectExchange(this Snail.Toolkit.RabbitMQ.Connections.IRabbitConnectionBuilder! connection, string! name) -> Snail.Toolkit.RabbitMQ.Exchanges.IRabbitExchangeBuilder!
+static Snail.Toolkit.RabbitMQ.Exchanges.Extensions.RabbitConnectionBuilderExtensions.AddDirectExchange<T>(this Snail.Toolkit.RabbitMQ.Connections.IRabbitConnectionBuilder! connection, string! name) -> Snail.Toolkit.RabbitMQ.Exchanges.IRabbitExchangeBuilder<T>!
+static Snail.Toolkit.RabbitMQ.Exchanges.Extensions.RabbitConnectionBuilderExtensions.AddExchange(this Snail.Toolkit.RabbitMQ.Connections.IRabbitConnectionBuilder! connection, string! type, string! name) -> Snail.Toolkit.RabbitMQ.Exchanges.IRabbitExchangeBuilder!
+static Snail.Toolkit.RabbitMQ.Exchanges.Extensions.RabbitConnectionBuilderExtensions.AddExchange<T>(this Snail.Toolkit.RabbitMQ.Connections.IRabbitConnectionBuilder! connection, string! type, string! name) -> Snail.Toolkit.RabbitMQ.Exchanges.IRabbitExchangeBuilder<T>!
+static Snail.Toolkit.RabbitMQ.Exchanges.Extensions.RabbitConnectionBuilderExtensions.AddFanoutExchange<T>(this Snail.Toolkit.RabbitMQ.Connections.IRabbitConnectionBuilder! connection, string! name) -> Snail.Toolkit.RabbitMQ.Exchanges.IRabbitExchangeBuilder<T>!
+static Snail.Toolkit.RabbitMQ.Exchanges.Extensions.RabbitConnectionBuilderExtensions.AddHeadersExchange(this Snail.Toolkit.RabbitMQ.Connections.IRabbitConnectionBuilder! connection, string! name) -> Snail.Toolkit.RabbitMQ.Exchanges.IRabbitExchangeBuilder!
+static Snail.Toolkit.RabbitMQ.Exchanges.Extensions.RabbitConnectionBuilderExtensions.AddHeadersExchange<T>(this Snail.Toolkit.RabbitMQ.Connections.IRabbitConnectionBuilder! connection, string! name) -> Snail.Toolkit.RabbitMQ.Exchanges.IRabbitExchangeBuilder<T>!
+static Snail.Toolkit.RabbitMQ.Exchanges.Extensions.RabbitConnectionBuilderExtensions.AddTopicExchange(this Snail.Toolkit.RabbitMQ.Connections.IRabbitConnectionBuilder! connection, string! name) -> Snail.Toolkit.RabbitMQ.Exchanges.IRabbitExchangeBuilder!
+static Snail.Toolkit.RabbitMQ.Exchanges.Extensions.RabbitConnectionBuilderExtensions.AddTopicExchange<T>(this Snail.Toolkit.RabbitMQ.Connections.IRabbitConnectionBuilder! connection, string! name) -> Snail.Toolkit.RabbitMQ.Exchanges.IRabbitExchangeBuilder<T>!
+static Snail.Toolkit.RabbitMQ.Exchanges.Extensions.RabbitExchangeBindingBuilderExtensions.Argument<TValue>(this Snail.Toolkit.RabbitMQ.Exchanges.IRabbitExchangeBindingBuilder! builder, string! argument, TValue value) -> Snail.Toolkit.RabbitMQ.Exchanges.IRabbitExchangeBindingBuilder!
+static Snail.Toolkit.RabbitMQ.Exchanges.Extensions.RabbitExchangeBindingBuilderExtensions.Deleted(this Snail.Toolkit.RabbitMQ.Exchanges.IRabbitExchangeBindingBuilder! builder) -> Snail.Toolkit.RabbitMQ.Exchanges.IRabbitExchangeBindingBuilder!
+static Snail.Toolkit.RabbitMQ.Exchanges.Extensions.RabbitExchangeBindingBuilderExtensions.NoWait(this Snail.Toolkit.RabbitMQ.Exchanges.IRabbitExchangeBindingBuilder! builder) -> Snail.Toolkit.RabbitMQ.Exchanges.IRabbitExchangeBindingBuilder!
+static Snail.Toolkit.RabbitMQ.Exchanges.Extensions.RabbitExchangeBindingBuilderExtensions.RoutedTo(this Snail.Toolkit.RabbitMQ.Exchanges.IRabbitExchangeBindingBuilder! builder, string! routingKey) -> Snail.Toolkit.RabbitMQ.Exchanges.IRabbitExchangeBindingBuilder!
+static Snail.Toolkit.RabbitMQ.Exchanges.Extensions.RabbitExchangeBuilderExtensions.AlternateTo(this Snail.Toolkit.RabbitMQ.Exchanges.IRabbitExchangeBuilder! builder, Snail.Toolkit.RabbitMQ.Exchanges.IRabbitExchangeBuilderCore! exchange) -> Snail.Toolkit.RabbitMQ.Exchanges.IRabbitExchangeBuilder!
+static Snail.Toolkit.RabbitMQ.Exchanges.Extensions.RabbitExchangeBuilderExtensions.AlternateTo<T>(this Snail.Toolkit.RabbitMQ.Exchanges.IRabbitExchangeBuilder<T>! builder, Snail.Toolkit.RabbitMQ.Exchanges.IRabbitExchangeBuilder! exchange) -> Snail.Toolkit.RabbitMQ.Exchanges.IRabbitExchangeBuilder<T>!
+static Snail.Toolkit.RabbitMQ.Exchanges.Extensions.RabbitExchangeBuilderExtensions.AlternateTo<T>(this Snail.Toolkit.RabbitMQ.Exchanges.IRabbitExchangeBuilder<T>! builder, Snail.Toolkit.RabbitMQ.Exchanges.IRabbitExchangeBuilder<T>! exchange) -> Snail.Toolkit.RabbitMQ.Exchanges.IRabbitExchangeBuilder<T>!
+static Snail.Toolkit.RabbitMQ.Exchanges.Extensions.RabbitExchangeBuilderExtensions.Argument<T>(this T builder, string! argument, object! value) -> T
+static Snail.Toolkit.RabbitMQ.Exchanges.Extensions.RabbitExchangeBuilderExtensions.AutoDelete<T>(this T builder) -> T
+static Snail.Toolkit.RabbitMQ.Exchanges.Extensions.RabbitExchangeBuilderExtensions.BoundTo(this Snail.Toolkit.RabbitMQ.Exchanges.IRabbitExchangeBuilder! builder, Snail.Toolkit.RabbitMQ.Exchanges.IRabbitExchangeBuilderCore! exchange, System.Action<Snail.Toolkit.RabbitMQ.Exchanges.IRabbitExchangeBindingBuilder!>? binding = null) -> Snail.Toolkit.RabbitMQ.Exchanges.IRabbitExchangeBuilder!
+static Snail.Toolkit.RabbitMQ.Exchanges.Extensions.RabbitExchangeBuilderExtensions.BoundTo<T>(this Snail.Toolkit.RabbitMQ.Exchanges.IRabbitExchangeBuilder<T>! builder, Snail.Toolkit.RabbitMQ.Exchanges.IRabbitExchangeBuilder! exchange, System.Action<Snail.Toolkit.RabbitMQ.Exchanges.IRabbitExchangeBindingBuilder!>? binding = null) -> Snail.Toolkit.RabbitMQ.Exchanges.IRabbitExchangeBuilder<T>!
+static Snail.Toolkit.RabbitMQ.Exchanges.Extensions.RabbitExchangeBuilderExtensions.BoundTo<T>(this Snail.Toolkit.RabbitMQ.Exchanges.IRabbitExchangeBuilder<T>! builder, Snail.Toolkit.RabbitMQ.Exchanges.IRabbitExchangeBuilder<T>! exchange, System.Action<Snail.Toolkit.RabbitMQ.Exchanges.IRabbitExchangeBindingBuilder!>? binding = null) -> Snail.Toolkit.RabbitMQ.Exchanges.IRabbitExchangeBuilder<T>!
+static Snail.Toolkit.RabbitMQ.Exchanges.Extensions.RabbitExchangeBuilderExtensions.Deleted<T>(this T builder, bool unusedOnly = false) -> T
+static Snail.Toolkit.RabbitMQ.Exchanges.Extensions.RabbitExchangeBuilderExtensions.Durable<T>(this T builder) -> T
+static Snail.Toolkit.RabbitMQ.Exchanges.Extensions.RabbitExchangeBuilderExtensions.NoWait<T>(this T builder) -> T
+static Snail.Toolkit.RabbitMQ.Extensions.RabbitBuilderExtensions.AddConnection(this Snail.Toolkit.RabbitMQ.IRabbitBuilder! builder, System.Action<Snail.Toolkit.RabbitMQ.Connections.IRabbitConnectionBuilder!>! connection) -> Snail.Toolkit.RabbitMQ.IRabbitBuilder!
+static Snail.Toolkit.RabbitMQ.Extensions.RabbitBuilderExtensions.AddConnection(this Snail.Toolkit.RabbitMQ.IRabbitBuilder! builder, string! name, System.Action<Snail.Toolkit.RabbitMQ.Connections.IRabbitConnectionBuilder!>! connection) -> Snail.Toolkit.RabbitMQ.IRabbitBuilder!
+static Snail.Toolkit.RabbitMQ.Extensions.RabbitOptionsExtensions.UseClientProvidedName(this Snail.Toolkit.RabbitMQ.RabbitOptions! options, string! clientProvidedName) -> Snail.Toolkit.RabbitMQ.RabbitOptions!
+static Snail.Toolkit.RabbitMQ.Extensions.RabbitOptionsExtensions.UseConnectionFactory(this Snail.Toolkit.RabbitMQ.RabbitOptions! options, System.Action<RabbitMQ.Client.ConnectionFactory!>! factory) -> Snail.Toolkit.RabbitMQ.RabbitOptions!
+static Snail.Toolkit.RabbitMQ.Extensions.RabbitOptionsExtensions.UseConnectionUrl(this Snail.Toolkit.RabbitMQ.RabbitOptions! options, string! url) -> Snail.Toolkit.RabbitMQ.RabbitOptions!
+static Snail.Toolkit.RabbitMQ.Extensions.RabbitOptionsExtensions.UseSerialization(this Snail.Toolkit.RabbitMQ.RabbitOptions! options, System.Func<object!, byte[]!>! serializer, System.Func<byte[]!, System.Type!, object!>! deserializer) -> Snail.Toolkit.RabbitMQ.RabbitOptions!
+static Snail.Toolkit.RabbitMQ.Extensions.ServiceCollectionExtensions.AddRabbit(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, Microsoft.Extensions.Configuration.IConfiguration! configuration, System.Action<Snail.Toolkit.RabbitMQ.IRabbitBuilder!>! connections, string! name = "RabbitMQ") -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Snail.Toolkit.RabbitMQ.Extensions.ServiceCollectionExtensions.AddRabbit(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Snail.Toolkit.RabbitMQ.RabbitOptions!>! options, System.Action<Snail.Toolkit.RabbitMQ.IRabbitBuilder!>? connections = null) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Snail.Toolkit.RabbitMQ.Producers.Extensions.RabbitConnectionBuilderExtensions.AddProducer<T>(this Snail.Toolkit.RabbitMQ.Connections.IRabbitConnectionBuilder! connection, Snail.Toolkit.RabbitMQ.Exchanges.IRabbitExchangeBuilder! exchange) -> Snail.Toolkit.RabbitMQ.Producers.IRabbitProducerBuilder<T>!
+static Snail.Toolkit.RabbitMQ.Producers.Extensions.RabbitConnectionBuilderExtensions.AddProducer<T>(this Snail.Toolkit.RabbitMQ.Connections.IRabbitConnectionBuilder! connection, Snail.Toolkit.RabbitMQ.Exchanges.IRabbitExchangeBuilder<T>! exchange) -> Snail.Toolkit.RabbitMQ.Producers.IRabbitProducerBuilder<T>!
+static Snail.Toolkit.RabbitMQ.Producers.Extensions.RabbitConnectionBuilderExtensions.AddProducer<T>(this Snail.Toolkit.RabbitMQ.Connections.IRabbitConnectionBuilder! connection, Snail.Toolkit.RabbitMQ.Exchanges.IRabbitExchangeBuilderCore? exchange = null) -> Snail.Toolkit.RabbitMQ.Producers.IRabbitProducerBuilder<T>!
+static Snail.Toolkit.RabbitMQ.Producers.Extensions.RabbitProducerBuilderExtensions.AppId<T>(this Snail.Toolkit.RabbitMQ.Producers.IRabbitProducerBuilder<T>! builder, string! appId) -> Snail.Toolkit.RabbitMQ.Producers.IRabbitProducerBuilder<T>!
+static Snail.Toolkit.RabbitMQ.Producers.Extensions.RabbitProducerBuilderExtensions.CorrelationId<T>(this Snail.Toolkit.RabbitMQ.Producers.IRabbitProducerBuilder<T>! builder, string! correlationId) -> Snail.Toolkit.RabbitMQ.Producers.IRabbitProducerBuilder<T>!
+static Snail.Toolkit.RabbitMQ.Producers.Extensions.RabbitProducerBuilderExtensions.Header<T>(this Snail.Toolkit.RabbitMQ.Producers.IRabbitProducerBuilder<T>! builder, string! header, object! value) -> Snail.Toolkit.RabbitMQ.Producers.IRabbitProducerBuilder<T>!
+static Snail.Toolkit.RabbitMQ.Producers.Extensions.RabbitProducerBuilderExtensions.Mandatory<T>(this Snail.Toolkit.RabbitMQ.Producers.IRabbitProducerBuilder<T>! builder) -> Snail.Toolkit.RabbitMQ.Producers.IRabbitProducerBuilder<T>!
+static Snail.Toolkit.RabbitMQ.Producers.Extensions.RabbitProducerBuilderExtensions.MessageId<T>(this Snail.Toolkit.RabbitMQ.Producers.IRabbitProducerBuilder<T>! builder, string! messageId) -> Snail.Toolkit.RabbitMQ.Producers.IRabbitProducerBuilder<T>!
+static Snail.Toolkit.RabbitMQ.Producers.Extensions.RabbitProducerBuilderExtensions.MessageTimeToLive<T>(this Snail.Toolkit.RabbitMQ.Producers.IRabbitProducerBuilder<T>! builder, System.TimeSpan timeToLive) -> Snail.Toolkit.RabbitMQ.Producers.IRabbitProducerBuilder<T>!
+static Snail.Toolkit.RabbitMQ.Producers.Extensions.RabbitProducerBuilderExtensions.Persistent<T>(this Snail.Toolkit.RabbitMQ.Producers.IRabbitProducerBuilder<T>! builder) -> Snail.Toolkit.RabbitMQ.Producers.IRabbitProducerBuilder<T>!
+static Snail.Toolkit.RabbitMQ.Producers.Extensions.RabbitProducerBuilderExtensions.Priority<T>(this Snail.Toolkit.RabbitMQ.Producers.IRabbitProducerBuilder<T>! builder, byte priority) -> Snail.Toolkit.RabbitMQ.Producers.IRabbitProducerBuilder<T>!
+static Snail.Toolkit.RabbitMQ.Producers.Extensions.RabbitProducerBuilderExtensions.Property<T>(this Snail.Toolkit.RabbitMQ.Producers.IRabbitProducerBuilder<T>! builder, System.Action<RabbitMQ.Client.IBasicProperties!>! property) -> Snail.Toolkit.RabbitMQ.Producers.IRabbitProducerBuilder<T>!
+static Snail.Toolkit.RabbitMQ.Producers.Extensions.RabbitProducerBuilderExtensions.RoutedTo<T>(this Snail.Toolkit.RabbitMQ.Producers.IRabbitProducerBuilder<T>! builder, Snail.Toolkit.RabbitMQ.Queues.IRabbitQueueBuilder<T>! queue) -> Snail.Toolkit.RabbitMQ.Producers.IRabbitProducerBuilder<T>!
+static Snail.Toolkit.RabbitMQ.Producers.Extensions.RabbitProducerBuilderExtensions.RoutedTo<T>(this Snail.Toolkit.RabbitMQ.Producers.IRabbitProducerBuilder<T>! builder, string! routingKey) -> Snail.Toolkit.RabbitMQ.Producers.IRabbitProducerBuilder<T>!
+static Snail.Toolkit.RabbitMQ.Producers.Extensions.RabbitProducerBuilderExtensions.Transactional<T>(this Snail.Toolkit.RabbitMQ.Producers.IRabbitProducerBuilder<T>! builder) -> Snail.Toolkit.RabbitMQ.Producers.IRabbitProducerBuilder<T>!
+static Snail.Toolkit.RabbitMQ.Producers.RabbitProducerDeclaration.FromDeclaration(Snail.Toolkit.RabbitMQ.Producers.RabbitProducerDeclaration! declaration) -> Snail.Toolkit.RabbitMQ.Producers.RabbitProducerDeclaration!
+static Snail.Toolkit.RabbitMQ.Queues.Extensions.RabbitConnectionBuilderExtensions.AddQueue<T>(this Snail.Toolkit.RabbitMQ.Connections.IRabbitConnectionBuilder! connection, string! queueName) -> Snail.Toolkit.RabbitMQ.Queues.IRabbitQueueBuilder<T>!
+static Snail.Toolkit.RabbitMQ.Queues.Extensions.RabbitQueueBindingBuilderExtensions.Argument<T>(this Snail.Toolkit.RabbitMQ.Queues.IRabbitQueueBindingBuilder! builder, string! argument, T value) -> Snail.Toolkit.RabbitMQ.Queues.IRabbitQueueBindingBuilder!
+static Snail.Toolkit.RabbitMQ.Queues.Extensions.RabbitQueueBindingBuilderExtensions.Deleted(this Snail.Toolkit.RabbitMQ.Queues.IRabbitQueueBindingBuilder! builder) -> Snail.Toolkit.RabbitMQ.Queues.IRabbitQueueBindingBuilder!
+static Snail.Toolkit.RabbitMQ.Queues.Extensions.RabbitQueueBindingBuilderExtensions.NoWait(this Snail.Toolkit.RabbitMQ.Queues.IRabbitQueueBindingBuilder! builder) -> Snail.Toolkit.RabbitMQ.Queues.IRabbitQueueBindingBuilder!
+static Snail.Toolkit.RabbitMQ.Queues.Extensions.RabbitQueueBindingBuilderExtensions.RoutedTo(this Snail.Toolkit.RabbitMQ.Queues.IRabbitQueueBindingBuilder! builder, string! routingKey) -> Snail.Toolkit.RabbitMQ.Queues.IRabbitQueueBindingBuilder!
+static Snail.Toolkit.RabbitMQ.Queues.Extensions.RabbitQueueBuilderExtensions.Argument<T>(this Snail.Toolkit.RabbitMQ.Queues.IRabbitQueueBuilder<T>! builder, string! argument, object! value) -> Snail.Toolkit.RabbitMQ.Queues.IRabbitQueueBuilder<T>!
+static Snail.Toolkit.RabbitMQ.Queues.Extensions.RabbitQueueBuilderExtensions.AutoDelete<T>(this Snail.Toolkit.RabbitMQ.Queues.IRabbitQueueBuilder<T>! builder) -> Snail.Toolkit.RabbitMQ.Queues.IRabbitQueueBuilder<T>!
+static Snail.Toolkit.RabbitMQ.Queues.Extensions.RabbitQueueBuilderExtensions.BoundTo<T>(this Snail.Toolkit.RabbitMQ.Queues.IRabbitQueueBuilder<T>! builder, Snail.Toolkit.RabbitMQ.Exchanges.IRabbitExchangeBuilder! exchange, System.Action<Snail.Toolkit.RabbitMQ.Queues.IRabbitQueueBindingBuilder!>? binding = null) -> Snail.Toolkit.RabbitMQ.Queues.IRabbitQueueBuilder<T>!
+static Snail.Toolkit.RabbitMQ.Queues.Extensions.RabbitQueueBuilderExtensions.BoundTo<T>(this Snail.Toolkit.RabbitMQ.Queues.IRabbitQueueBuilder<T>! builder, Snail.Toolkit.RabbitMQ.Exchanges.IRabbitExchangeBuilder<T>! exchange, System.Action<Snail.Toolkit.RabbitMQ.Queues.IRabbitQueueBindingBuilder!>? binding = null) -> Snail.Toolkit.RabbitMQ.Queues.IRabbitQueueBuilder<T>!
+static Snail.Toolkit.RabbitMQ.Queues.Extensions.RabbitQueueBuilderExtensions.DeadLetterTo<T>(this Snail.Toolkit.RabbitMQ.Queues.IRabbitQueueBuilder<T>! builder, Snail.Toolkit.RabbitMQ.Exchanges.IRabbitExchangeBuilder! exchange, Snail.Toolkit.RabbitMQ.Queues.IRabbitQueueBuilder<T>! queue) -> Snail.Toolkit.RabbitMQ.Queues.IRabbitQueueBuilder<T>!
+static Snail.Toolkit.RabbitMQ.Queues.Extensions.RabbitQueueBuilderExtensions.DeadLetterTo<T>(this Snail.Toolkit.RabbitMQ.Queues.IRabbitQueueBuilder<T>! builder, Snail.Toolkit.RabbitMQ.Exchanges.IRabbitExchangeBuilder! exchange, string? routingKey = null) -> Snail.Toolkit.RabbitMQ.Queues.IRabbitQueueBuilder<T>!
+static Snail.Toolkit.RabbitMQ.Queues.Extensions.RabbitQueueBuilderExtensions.DeadLetterTo<T>(this Snail.Toolkit.RabbitMQ.Queues.IRabbitQueueBuilder<T>! builder, Snail.Toolkit.RabbitMQ.Exchanges.IRabbitExchangeBuilder<T>! exchange, Snail.Toolkit.RabbitMQ.Queues.IRabbitQueueBuilder<T>! queue) -> Snail.Toolkit.RabbitMQ.Queues.IRabbitQueueBuilder<T>!
+static Snail.Toolkit.RabbitMQ.Queues.Extensions.RabbitQueueBuilderExtensions.DeadLetterTo<T>(this Snail.Toolkit.RabbitMQ.Queues.IRabbitQueueBuilder<T>! builder, Snail.Toolkit.RabbitMQ.Exchanges.IRabbitExchangeBuilder<T>! exchange, string? routingKey = null) -> Snail.Toolkit.RabbitMQ.Queues.IRabbitQueueBuilder<T>!
+static Snail.Toolkit.RabbitMQ.Queues.Extensions.RabbitQueueBuilderExtensions.Deleted<T>(this Snail.Toolkit.RabbitMQ.Queues.IRabbitQueueBuilder<T>! builder, bool unusedOnly = false, bool emptyOnly = false) -> Snail.Toolkit.RabbitMQ.Queues.IRabbitQueueBuilder<T>!
+static Snail.Toolkit.RabbitMQ.Queues.Extensions.RabbitQueueBuilderExtensions.Durable<T>(this Snail.Toolkit.RabbitMQ.Queues.IRabbitQueueBuilder<T>! builder) -> Snail.Toolkit.RabbitMQ.Queues.IRabbitQueueBuilder<T>!
+static Snail.Toolkit.RabbitMQ.Queues.Extensions.RabbitQueueBuilderExtensions.Exclusive<T>(this Snail.Toolkit.RabbitMQ.Queues.IRabbitQueueBuilder<T>! builder) -> Snail.Toolkit.RabbitMQ.Queues.IRabbitQueueBuilder<T>!
+static Snail.Toolkit.RabbitMQ.Queues.Extensions.RabbitQueueBuilderExtensions.Lazy<T>(this Snail.Toolkit.RabbitMQ.Queues.IRabbitQueueBuilder<T>! builder) -> Snail.Toolkit.RabbitMQ.Queues.IRabbitQueueBuilder<T>!
+static Snail.Toolkit.RabbitMQ.Queues.Extensions.RabbitQueueBuilderExtensions.MaxMessageCount<T>(this Snail.Toolkit.RabbitMQ.Queues.IRabbitQueueBuilder<T>! builder, uint count) -> Snail.Toolkit.RabbitMQ.Queues.IRabbitQueueBuilder<T>!
+static Snail.Toolkit.RabbitMQ.Queues.Extensions.RabbitQueueBuilderExtensions.MaxMessageSize<T>(this Snail.Toolkit.RabbitMQ.Queues.IRabbitQueueBuilder<T>! builder, uint bytes) -> Snail.Toolkit.RabbitMQ.Queues.IRabbitQueueBuilder<T>!
+static Snail.Toolkit.RabbitMQ.Queues.Extensions.RabbitQueueBuilderExtensions.MaxPriority<T>(this Snail.Toolkit.RabbitMQ.Queues.IRabbitQueueBuilder<T>! builder, byte priority) -> Snail.Toolkit.RabbitMQ.Queues.IRabbitQueueBuilder<T>!
+static Snail.Toolkit.RabbitMQ.Queues.Extensions.RabbitQueueBuilderExtensions.MessageTimeToLive<T>(this Snail.Toolkit.RabbitMQ.Queues.IRabbitQueueBuilder<T>! builder, System.TimeSpan timeToLive) -> Snail.Toolkit.RabbitMQ.Queues.IRabbitQueueBuilder<T>!
+static Snail.Toolkit.RabbitMQ.Queues.Extensions.RabbitQueueBuilderExtensions.NoWait<T>(this Snail.Toolkit.RabbitMQ.Queues.IRabbitQueueBuilder<T>! builder) -> Snail.Toolkit.RabbitMQ.Queues.IRabbitQueueBuilder<T>!
+static Snail.Toolkit.RabbitMQ.Queues.Extensions.RabbitQueueBuilderExtensions.Quorum<T>(this Snail.Toolkit.RabbitMQ.Queues.IRabbitQueueBuilder<T>! builder, int? initialGroupSize = null) -> Snail.Toolkit.RabbitMQ.Queues.IRabbitQueueBuilder<T>!
+static Snail.Toolkit.RabbitMQ.Queues.Extensions.RabbitQueueBuilderExtensions.RejectPublish<T>(this Snail.Toolkit.RabbitMQ.Queues.IRabbitQueueBuilder<T>! builder) -> Snail.Toolkit.RabbitMQ.Queues.IRabbitQueueBuilder<T>!
+static Snail.Toolkit.RabbitMQ.Queues.Extensions.RabbitQueueBuilderExtensions.SingleActiveConsumer<T>(this Snail.Toolkit.RabbitMQ.Queues.IRabbitQueueBuilder<T>! builder) -> Snail.Toolkit.RabbitMQ.Queues.IRabbitQueueBuilder<T>!
+static Snail.Toolkit.RabbitMQ.Queues.Extensions.RabbitQueueBuilderExtensions.TimeToLive<T>(this Snail.Toolkit.RabbitMQ.Queues.IRabbitQueueBuilder<T>! builder, System.TimeSpan timeToLive) -> Snail.Toolkit.RabbitMQ.Queues.IRabbitQueueBuilder<T>!
+static Snail.Toolkit.RabbitMQ.Queues.Extensions.RabbitQueueBuilderExtensions.WithRetry<T>(this Snail.Toolkit.RabbitMQ.Queues.IRabbitQueueBuilder<T>! builder, System.TimeSpan delay, int maxAttempts = 3, string? parkTo = null) -> Snail.Toolkit.RabbitMQ.Queues.IRabbitQueueBuilder<T>!
+static Snail.Toolkit.RabbitMQ.RabbitTracing.SourceNames.get -> string![]!

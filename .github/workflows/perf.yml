@@ -1,0 +1,17 @@
+name: performance
+
+# Every two months: the benchmarks against benchmarks/Snail.Toolkit.RabbitMQ.Benchmarks/baseline/, and Stryker.NET on the tests.
+
+on:
+  schedule:
+    - cron: '0 4 1 */2 *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  perf:
+    uses: orldev/Snail.Sdk/.github/workflows/perf.yml@v1
+    with:
+      benchmarks: benchmarks/Snail.Toolkit.RabbitMQ.Benchmarks

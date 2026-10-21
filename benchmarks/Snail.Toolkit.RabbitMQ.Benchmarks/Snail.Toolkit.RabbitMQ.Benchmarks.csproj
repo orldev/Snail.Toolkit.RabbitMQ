@@ -1,0 +1,12 @@
+<Project Sdk="Snail.Sdk">
+
+  <ItemGroup>
+    <PackageReference Include="BenchmarkDotNet" />
+    <PackageReference Include="Microsoft.Extensions.Logging" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Snail.Toolkit.RabbitMQ.csproj" />
+  </ItemGroup>
+
+</Project>
