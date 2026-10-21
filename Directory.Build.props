@@ -5,7 +5,7 @@
     <TargetFramework>net10.0</TargetFramework>
     <RepositoryUrl>https://github.com/orldev/Snail.Toolkit.RabbitMQ</RepositoryUrl>
     <!-- The last release on NuGet: a pack fails on any change that would break a user of it. Raised with each release. -->
-    <SnailPackageBaseline>1.1.0</SnailPackageBaseline>
+    <SnailPackageBaseline>2.0.0</SnailPackageBaseline>
   </PropertyGroup>
 
 </Project>
