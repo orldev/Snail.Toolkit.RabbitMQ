@@ -1,5 +1,1 @@
 #nullable enable
-Snail.Toolkit.RabbitMQ.Consumers.IExhaustibleConsumer<T>
-Snail.Toolkit.RabbitMQ.Consumers.IExhaustibleConsumer<T>.ExhaustedAsync(T message, System.Exception! failure, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask
-Snail.Toolkit.RabbitMQ.Consumers.RabbitConsumerDeclaration.ConsumerTypes.get -> System.Collections.Generic.IReadOnlyList<System.Type!>!
-Snail.Toolkit.RabbitMQ.RabbitOptions.Consumers.get -> System.Collections.Generic.IReadOnlyList<Snail.Toolkit.RabbitMQ.Consumers.RabbitConsumerDeclaration!>!

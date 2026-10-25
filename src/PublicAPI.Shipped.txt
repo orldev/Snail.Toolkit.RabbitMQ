@@ -52,6 +52,8 @@ Snail.Toolkit.RabbitMQ.Consumers.Extensions.RabbitConnectionBuilderExtensions
 Snail.Toolkit.RabbitMQ.Consumers.Extensions.RabbitConsumerBuilderExtensions
 Snail.Toolkit.RabbitMQ.Consumers.IConsumer<T>
 Snail.Toolkit.RabbitMQ.Consumers.IConsumer<T>.HandleAsync(T message, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask
+Snail.Toolkit.RabbitMQ.Consumers.IExhaustibleConsumer<T>
+Snail.Toolkit.RabbitMQ.Consumers.IExhaustibleConsumer<T>.ExhaustedAsync(T message, System.Exception! failure, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask
 Snail.Toolkit.RabbitMQ.Consumers.IRabbitConsumerBuilder<T>
 Snail.Toolkit.RabbitMQ.Consumers.IRabbitConsumerBuilder<T>.ConsumerDeclaration.get -> Snail.Toolkit.RabbitMQ.Consumers.RabbitConsumerDeclaration!
 Snail.Toolkit.RabbitMQ.Consumers.IRabbitConsumerBuilder<T>.Services.get -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
@@ -60,6 +62,7 @@ Snail.Toolkit.RabbitMQ.Consumers.RabbitConsumerDeclaration.Arguments.get -> Syst
 Snail.Toolkit.RabbitMQ.Consumers.RabbitConsumerDeclaration.AutoAck.get -> bool
 Snail.Toolkit.RabbitMQ.Consumers.RabbitConsumerDeclaration.AutoAck.set -> void
 Snail.Toolkit.RabbitMQ.Consumers.RabbitConsumerDeclaration.ConnectionDeclaration.get -> Snail.Toolkit.RabbitMQ.Connections.RabbitConnectionDeclaration!
+Snail.Toolkit.RabbitMQ.Consumers.RabbitConsumerDeclaration.ConsumerTypes.get -> System.Collections.Generic.IReadOnlyList<System.Type!>!
 Snail.Toolkit.RabbitMQ.Consumers.RabbitConsumerDeclaration.Count.get -> uint
 Snail.Toolkit.RabbitMQ.Consumers.RabbitConsumerDeclaration.Count.set -> void
 Snail.Toolkit.RabbitMQ.Consumers.RabbitConsumerDeclaration.Exclusive.get -> bool
@@ -207,6 +210,7 @@ Snail.Toolkit.RabbitMQ.RabbitMissingDeclarationException
 Snail.Toolkit.RabbitMQ.RabbitMissingDeclarationException.PayloadType.get -> System.Type!
 Snail.Toolkit.RabbitMQ.RabbitMissingDeclarationException.RabbitMissingDeclarationException(System.Type! payloadType) -> void
 Snail.Toolkit.RabbitMQ.RabbitOptions
+Snail.Toolkit.RabbitMQ.RabbitOptions.Consumers.get -> System.Collections.Generic.IReadOnlyList<Snail.Toolkit.RabbitMQ.Consumers.RabbitConsumerDeclaration!>!
 Snail.Toolkit.RabbitMQ.RabbitOptions.RabbitOptions() -> void
 Snail.Toolkit.RabbitMQ.RabbitTracing
 Snail.Toolkit.RabbitMQ.RabbitTracing.Settlement
