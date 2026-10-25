@@ -121,7 +121,16 @@ public sealed class RabbitOptions
     /// <summary>
     /// Gets a list of consumer declarations.
     /// </summary>
-    internal IList<RabbitConsumerDeclaration> ConsumerDeclarations { get; } = [];
+    internal List<RabbitConsumerDeclaration> ConsumerDeclarations { get; } = [];
+
+    /// <summary>
+    /// The consumers the application declared, in the order it declared them.
+    /// </summary>
+    /// <remarks>
+    /// Read-only, for a library built on this one to check at startup what it relies on — that a queue it consumes
+    /// retries, that the consumers subscribed are the ones it expects — instead of learning it from a lost message.
+    /// </remarks>
+    public IReadOnlyList<RabbitConsumerDeclaration> Consumers => ConsumerDeclarations;
 
     /// <summary>
     /// Gets a dictionary of producer declarations, keyed by the type of the produced message.

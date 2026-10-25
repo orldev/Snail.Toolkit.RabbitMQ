@@ -223,6 +223,13 @@ certificate validation compares against. `CertPath` is only needed for mutual TL
   an auto-acknowledged message can never be requeued or retried
 - A handler cancelled by the host stopping has its message returned to the queue (nack with requeue) for the
   next consumer: a shutdown is neither an attempt of the retry budget nor a rejection
+- A consumer that implements `IExhaustibleConsumer<T>` is told, through `ExhaustedAsync(message, failure)`, when
+  one of its messages will not be delivered again — its retry attempts exhausted, rejected without a requeue, or
+  lost to `AutoAck` — before the message is settled. A consumer that throws cannot tell its last attempt from the
+  others; this is where it reports the failure upstream. A shutdown or a poison message tells nobody, and a failure
+  in `ExhaustedAsync` is logged and settles the message all the same
+- `RabbitOptions.Consumers` lists the declared consumers, and `ConsumerTypes` the types subscribed with
+  `Subscribe<T, TConsumer>`, so a library built on this one can check at startup what it relies on
 
 ## Producers
 

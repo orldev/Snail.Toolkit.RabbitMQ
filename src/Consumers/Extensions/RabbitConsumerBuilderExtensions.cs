@@ -29,6 +29,7 @@ public static class RabbitConsumerBuilderExtensions
         where TConsumer : class, IConsumer<T>
     {
         builder.Services.AddTransient<TConsumer>();
+        builder.ConsumerDeclaration.AddConsumerType(typeof(TConsumer));
 
         builder.ConsumerDeclaration.AddSubscription(
             static (scope, payload, cancellationToken) =>
@@ -39,7 +40,22 @@ public static class RabbitConsumerBuilderExtensions
                 return consumer.HandleAsync(message, cancellationToken);
             });
 
+        if (typeof(IExhaustibleConsumer<T>).IsAssignableFrom(typeof(TConsumer)))
+            builder.ConsumerDeclaration.AddExhaustion(Exhausted<T, TConsumer>);
+
         return builder;
+    }
+
+    private static ValueTask Exhausted<T, TConsumer>(
+        IServiceScope scope,
+        object payload,
+        Exception failure,
+        CancellationToken cancellationToken)
+        where TConsumer : class, IConsumer<T>
+    {
+        var consumer = (IExhaustibleConsumer<T>)scope.ServiceProvider.GetRequiredService<TConsumer>();
+
+        return consumer.ExhaustedAsync((T)payload, failure, cancellationToken);
     }
 
     /// <summary>

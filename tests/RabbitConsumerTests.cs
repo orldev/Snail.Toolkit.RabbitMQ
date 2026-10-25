@@ -320,4 +320,114 @@ public class RabbitConsumerTests
         Assert.Equal("\"hello\""u8.ToArray(), handed);
         Assert.Equal("custom", received);
     }
+
+    /// <summary>
+    /// A consumer that throws cannot tell its last attempt from the others, so a message whose attempts ran out used to
+    /// be parked or dropped with nobody upstream told.
+    /// </summary>
+    [Fact]
+    public async Task HandlerFailure_WithRetry_ExhaustedAttempts_TellsTheConsumerOnce()
+    {
+        _queue.RetryQueue = new RabbitQueueDeclaration(_queue.ConnectionDeclaration, "queue.retry");
+        _queue.MaxAttempts = 3;
+        _declaration.AddSubscription((_, _, _) => throw new InvalidOperationException("boom"));
+        List<string> told = Told();
+
+        await DeliverAsync("\"hello\"", properties: PropertiesWithDeaths("queue", rejectedCount: 2));
+
+        Assert.Equal(["hello: boom"], told);
+    }
+
+    [Fact]
+    public async Task HandlerFailure_WithRetry_BelowBudget_TellsNobody()
+    {
+        _queue.RetryQueue = new RabbitQueueDeclaration(_queue.ConnectionDeclaration, "queue.retry");
+        _queue.MaxAttempts = 3;
+        _declaration.AddSubscription((_, _, _) => throw new InvalidOperationException("boom"));
+        List<string> told = Told();
+
+        await DeliverAsync("\"hello\"", properties: PropertiesWithDeaths("queue", rejectedCount: 1));
+
+        Assert.Empty(told);
+    }
+
+    [Fact]
+    public async Task HandlerFailure_WithoutRetry_Redelivered_TellsTheConsumer()
+    {
+        _declaration.Requeue = true;
+        _declaration.AddSubscription((_, _, _) => throw new InvalidOperationException("boom"));
+        List<string> told = Told();
+
+        await DeliverAsync("\"hello\"", redelivered: true);
+
+        Assert.Equal(["hello: boom"], told);
+    }
+
+    [Fact]
+    public async Task HandlerFailure_WithoutRetry_RequeuedOnce_TellsNobody()
+    {
+        _declaration.Requeue = true;
+        _declaration.AddSubscription((_, _, _) => throw new InvalidOperationException("boom"));
+        List<string> told = Told();
+
+        await DeliverAsync("\"hello\"");
+
+        Assert.Empty(told);
+    }
+
+    [Fact]
+    public async Task HandlerFailure_WithAutoAck_TellsTheConsumer()
+    {
+        _declaration.AutoAck = true;
+        _declaration.AddSubscription((_, _, _) => throw new InvalidOperationException("boom"));
+        List<string> told = Told();
+
+        await DeliverAsync("\"hello\"");
+
+        Assert.Equal(["hello: boom"], told);
+    }
+
+    /// <summary>
+    /// A stopping host hands its delivery back whole; the message is not given up, and nobody is told it was.
+    /// </summary>
+    [Fact]
+    public async Task HandlerCancelled_ByAStoppingHost_TellsNobody()
+    {
+        _queue.RetryQueue = new RabbitQueueDeclaration(_queue.ConnectionDeclaration, "queue.retry");
+        _queue.MaxAttempts = 1;
+        _declaration.AddSubscription((_, _, token) => throw new OperationCanceledException(token));
+        List<string> told = Told();
+        using var stopping = new CancellationTokenSource();
+        await stopping.CancelAsync();
+
+        await CreateConsumer().HandleBasicDeliverAsync(
+            "tag", 1UL, false, string.Empty, "queue", new BasicProperties(), "\"hello\""u8.ToArray(), stopping.Token);
+
+        Assert.Empty(told);
+    }
+
+    [Fact]
+    public async Task ConsumerTold_FailsToListen_TheMessageIsSettledAllTheSame()
+    {
+        _queue.RetryQueue = new RabbitQueueDeclaration(_queue.ConnectionDeclaration, "queue.retry");
+        _queue.MaxAttempts = 1;
+        _declaration.AddSubscription((_, _, _) => throw new InvalidOperationException("boom"));
+        _declaration.AddExhaustion((_, _, _, _) => throw new InvalidOperationException("the listener is down"));
+
+        await DeliverAsync("\"hello\"");
+
+        _channel.Verify(c => c.BasicAckAsync(1UL, false, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    private List<string> Told()
+    {
+        List<string> told = [];
+        _declaration.AddExhaustion((_, payload, failure, _) =>
+        {
+            told.Add($"{payload}: {failure.Message}");
+            return ValueTask.CompletedTask;
+        });
+
+        return told;
+    }
 }

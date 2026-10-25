@@ -127,12 +127,52 @@ internal sealed class RabbitConsumer(
 
         if (declaration.AutoAck)
         {
+            await ExhaustAsync(payload, failure, cancellationToken);
             RabbitTracing.Settled(RabbitTracing.Settlement.Lost);
             Log.AutoAckedMessageLost(logger, failure, queue.Name);
             return;
         }
 
-        await NackFailedAsync(deliveryTag, redelivered, properties, body, failure, cancellationToken);
+        await NackFailedAsync(deliveryTag, redelivered, properties, body, payload, failure, cancellationToken);
+    }
+
+    /// <summary>
+    /// Tells the consumers that asked for it that a message is given up for good.
+    /// </summary>
+    /// <param name="payload">The message given up.</param>
+    /// <param name="failure">What its last attempt threw.</param>
+    /// <param name="cancellationToken">A token to observe while waiting for the task to complete.</param>
+    /// <returns>A task that completes once every consumer was told, or failed to be.</returns>
+    /// <remarks>
+    /// Without an <see cref="IExhaustibleConsumer{T}"/> subscribed nothing is made — no scope, no state machine left
+    /// behind — so a failed delivery costs the queues that never asked exactly what it did. A consumer that fails to
+    /// listen is logged and the next one is told all the same: the message is settled either way.
+    /// </remarks>
+    private async Task ExhaustAsync(object payload, Exception failure, CancellationToken cancellationToken)
+    {
+        var exhaustions = declaration.Exhaustions;
+        if (exhaustions.Count == 0)
+            return;
+
+        var scope = serviceProvider.CreateScope();
+        try
+        {
+            for (var i = 0; i < exhaustions.Count; i++)
+            {
+                try
+                {
+                    await exhaustions[i](scope, payload, failure, cancellationToken);
+                }
+                catch (Exception exception)
+                {
+                    Log.ExhaustionNotHeard(logger, exception, queue.Name);
+                }
+            }
+        }
+        finally
+        {
+            await DisposeAsync(scope);
+        }
     }
 
     /// <summary>
@@ -277,25 +317,31 @@ internal sealed class RabbitConsumer(
     /// <param name="redelivered">True if the message has been redelivered.</param>
     /// <param name="properties">The message properties carrying the x-death header.</param>
     /// <param name="body">The message body to carry into the parking queue.</param>
+    /// <param name="payload">The deserialized message, for the consumers told when it is given up.</param>
     /// <param name="exception">The handler failure.</param>
     /// <param name="cancellationToken">A token to observe while waiting for the task to complete.</param>
     /// <remarks>
     /// With WithRetry configured on the queue, the message is rejected into the retry queue until
     /// the attempt budget is exhausted, then parked when a parking queue is configured, otherwise
     /// acknowledged, logged and dropped. Without retry the legacy behavior applies: a single
-    /// immediate requeue when Requeue is enabled.
+    /// immediate requeue when Requeue is enabled. Whenever the message will not come back, the
+    /// consumers that asked are told first.
     /// </remarks>
     private async Task NackFailedAsync(
         ulong deliveryTag,
         bool redelivered,
         IReadOnlyBasicProperties properties,
         ReadOnlyMemory<byte> body,
+        object payload,
         Exception exception,
         CancellationToken cancellationToken)
     {
         if (queue.RetryQueue is null)
         {
             var requeue = !redelivered && declaration.Requeue;
+
+            if (!requeue)
+                await ExhaustAsync(payload, exception, cancellationToken);
 
             await Channel.BasicNackAsync(
                 deliveryTag,
@@ -314,6 +360,8 @@ internal sealed class RabbitConsumer(
 
         if (attempt >= queue.MaxAttempts)
         {
+            await ExhaustAsync(payload, exception, cancellationToken);
+
             if (queue.ParkingQueue is not null)
             {
                 Log.MessageParked(logger, exception, queue.Name, attempt, queue.ParkingQueue.Name);

@@ -54,6 +54,7 @@ Provides options for configuring RabbitMQ connections, serialization, and declar
 
 | Member | Summary |
 | --- | --- |
+| `IReadOnlyList<RabbitConsumerDeclaration> Consumers { get; }` | The consumers the application declared, in the order it declared them. |
 | `RabbitOptions()` |  |
 
 ### static class RabbitTracing
@@ -180,6 +181,14 @@ Defines a contract for message consumers that handle messages of a specific type
 | --- | --- |
 | `ValueTask HandleAsync(T message, CancellationToken cancellationToken = default)` | Handles an incoming message asynchronously. |
 
+### interface IExhaustibleConsumer<T>
+
+A consumer that is told when the broker gives one of its messages up for good.
+
+| Member | Summary |
+| --- | --- |
+| `ValueTask ExhaustedAsync(T message, Exception failure, CancellationToken cancellationToken = default)` | Learns that a message will not be delivered again, and the failure of its last attempt. |
+
 ### interface IRabbitConsumerBuilder<T>
 
 Represents a builder for configuring RabbitMQ message consumers for a specific message type.
@@ -198,6 +207,7 @@ Represents the configuration for a RabbitMQ message consumer.
 | `IDictionary<string, object?> Arguments { get; }` | Gets additional arguments that can be used when consuming messages. |
 | `IReadOnlyList<Func<IServiceScope, object, CancellationToken, ValueTask>> Subscriptions { get; }` | Gets the subscription handlers that process incoming messages, in the order they run. |
 | `IReadOnlyList<RabbitQueueDeclaration> QueueDeclarations { get; }` | Gets the queue declarations from which this consumer will receive messages. |
+| `IReadOnlyList<Type> ConsumerTypes { get; }` | The consumer types subscribed by type, in the order they were subscribed. |
 | `RabbitConnectionDeclaration ConnectionDeclaration { get; }` | Gets the connection declaration used to connect to RabbitMQ. |
 | `RabbitConsumerDeclaration(Type payloadType, RabbitConnectionDeclaration connectionDeclaration, RabbitQueueDeclaration[] queueDeclarations)` | Represents the configuration for a RabbitMQ message consumer. |
 | `Type PayloadType { get; }` | Gets the type of message payload this consumer will handle. |

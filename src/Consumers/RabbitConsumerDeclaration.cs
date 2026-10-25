@@ -30,6 +30,8 @@ public sealed class RabbitConsumerDeclaration(
     public const ushort DefaultPrefetchCount = 10;
 
     private readonly List<Func<IServiceScope, object, CancellationToken, ValueTask>> _subscriptions = [];
+    private readonly List<Func<IServiceScope, object, Exception, CancellationToken, ValueTask>> _exhaustions = [];
+    private readonly List<Type> _consumerTypes = [];
 
     /// <summary>
     /// Gets the type of message payload this consumer will handle.
@@ -51,6 +53,15 @@ public sealed class RabbitConsumerDeclaration(
     /// </summary>
     /// <remarks>Added through the Subscribe extensions of the consumer builder.</remarks>
     public IReadOnlyList<Func<IServiceScope, object, CancellationToken, ValueTask>> Subscriptions => _subscriptions;
+
+    /// <summary>
+    /// The consumer types subscribed by type, in the order they were subscribed.
+    /// </summary>
+    /// <remarks>
+    /// Only <c>Subscribe&lt;T, TConsumer&gt;</c> names a type; a handler subscribed as a delegate has none. A subscription
+    /// is a delegate either way, so without this nothing outside could tell which consumer reads a queue.
+    /// </remarks>
+    public IReadOnlyList<Type> ConsumerTypes => _consumerTypes;
 
     /// <summary>
     /// Gets or sets the consumer tag for identifying this consumer.
@@ -107,4 +118,22 @@ public sealed class RabbitConsumerDeclaration(
     /// <param name="subscription">The handler.</param>
     internal void AddSubscription(Func<IServiceScope, object, CancellationToken, ValueTask> subscription) =>
         _subscriptions.Add(subscription);
+
+    /// <summary>
+    /// The handlers told, in the order they were added, when a message is given up for good.
+    /// </summary>
+    internal IReadOnlyList<Func<IServiceScope, object, Exception, CancellationToken, ValueTask>> Exhaustions => _exhaustions;
+
+    /// <summary>
+    /// Adds a handler told when a message is given up for good.
+    /// </summary>
+    /// <param name="exhaustion">The handler.</param>
+    internal void AddExhaustion(Func<IServiceScope, object, Exception, CancellationToken, ValueTask> exhaustion) =>
+        _exhaustions.Add(exhaustion);
+
+    /// <summary>
+    /// Records a consumer type subscribed by type.
+    /// </summary>
+    /// <param name="consumerType">The consumer type.</param>
+    internal void AddConsumerType(Type consumerType) => _consumerTypes.Add(consumerType);
 }

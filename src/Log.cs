@@ -97,4 +97,8 @@ internal static partial class Log
     [LoggerMessage(EventId = 22, Level = LogLevel.Warning,
         Message = "A publish on connection '{Name}' found the connection lost; waiting up to {Wait} for the client to recover it")]
     internal static partial void PublishWaitingForRecovery(ILogger logger, Exception exception, string name, TimeSpan wait);
+
+    [LoggerMessage(EventId = 23, Level = LogLevel.Error,
+        Message = "A consumer of queue '{Queue}' failed to hear that a message was given up; the message is settled all the same")]
+    internal static partial void ExhaustionNotHeard(ILogger logger, Exception exception, string queue);
 }
